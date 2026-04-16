@@ -10,3 +10,4 @@ export { CopyButton } from "./CopyButton";
 export { DiffHighlight } from "./DiffHighlight";
 export { Tooltip } from "./Tooltip";
 export { Spinner } from "./Spinner";
+export { Slider } from "./Slider";

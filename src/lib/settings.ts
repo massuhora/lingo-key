@@ -1,4 +1,4 @@
-import type { Settings, AppSettings, OutputMode } from '../types';
+import type { Settings, AppSettings, OutputMode, Theme } from '../types';
 
 export const DEFAULT_AI_PROVIDER = {
   baseUrl: 'https://api.deepseek.com',
@@ -13,6 +13,8 @@ export const DEFAULT_SETTINGS: Settings = {
   outputMode: 'enhanced',
   autoStart: false,
   alwaysOnTop: true,
+  theme: 'dark',
+  opacity: 1.0,
   aiProvider: DEFAULT_AI_PROVIDER,
 };
 
@@ -101,11 +103,22 @@ export function normalizeOutputMode(mode: string): OutputMode {
   return mode === 'conservative' ? 'conservative' : 'enhanced';
 }
 
+export function normalizeTheme(theme: string): Theme {
+  return theme === 'light' ? 'light' : 'dark';
+}
+
+export function normalizeOpacity(opacity: number): number {
+  if (typeof opacity !== 'number' || Number.isNaN(opacity)) return 1.0;
+  return Math.max(0.3, Math.min(1.0, opacity));
+}
+
 export function mergeSettings(partial: Partial<Settings>): Settings {
   return {
     ...DEFAULT_SETTINGS,
     ...partial,
     outputMode: normalizeOutputMode(partial.outputMode ?? DEFAULT_SETTINGS.outputMode),
+    theme: normalizeTheme(partial.theme ?? DEFAULT_SETTINGS.theme),
+    opacity: normalizeOpacity(partial.opacity ?? DEFAULT_SETTINGS.opacity),
     aiProvider: {
       ...DEFAULT_SETTINGS.aiProvider,
       ...(partial.aiProvider ?? {}),
@@ -123,6 +136,8 @@ export function toAppSettings(settings: Settings): AppSettings {
     outputMode: settings.outputMode,
     autoStart: settings.autoStart,
     alwaysOnTop: settings.alwaysOnTop,
+    theme: settings.theme,
+    opacity: settings.opacity,
     aiProvider: settings.aiProvider,
   };
 }
@@ -135,6 +150,8 @@ export function toSettings(app: AppSettings): Settings {
     outputMode: app.outputMode,
     autoStart: app.autoStart,
     alwaysOnTop: app.alwaysOnTop,
+    theme: app.theme,
+    opacity: app.opacity,
     aiProvider: app.aiProvider,
   };
 }

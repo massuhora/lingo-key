@@ -10,6 +10,37 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  /* Dark theme (default) */
+  --background: #0F172A;
+  --foreground: #F8FAFC;
+  --primary: #1E293B;
+  --on-primary: #FFFFFF;
+  --secondary: #334155;
+  --accent: #22C55E;
+  --muted: #272F42;
+  --border: #475569;
+  --destructive: #EF4444;
+  --ring: #1E293B;
+  --scrollbar: #475569;
+  --scrollbar-hover: #64748b;
+  --selection: rgba(34, 197, 94, 0.3);
+}
+
+.light {
+  --background: #FFFFFF;
+  --foreground: #0F172A;
+  --primary: #F1F5F9;
+  --on-primary: #0F172A;
+  --secondary: #E2E8F0;
+  --accent: #16A34A;
+  --muted: #F1F5F9;
+  --border: #CBD5E1;
+  --destructive: #DC2626;
+  --ring: #E2E8F0;
+  --scrollbar: #CBD5E1;
+  --scrollbar-hover: #94A3B8;
+  --selection: rgba(22, 163, 74, 0.2);
 }
 
 body {
@@ -37,22 +68,22 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #475569;
+  background: var(--scrollbar);
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #64748b;
+  background: var(--scrollbar-hover);
 }
 
 /* Selection */
 ::selection {
-  background: rgba(34, 197, 94, 0.3);
+  background: var(--selection);
 }
 
 /* Focus visible */
 *:focus-visible {
-  outline: 2px solid #22C55E;
+  outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
 

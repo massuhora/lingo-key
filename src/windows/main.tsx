@@ -4,6 +4,7 @@ import { useOptimize } from '../hooks/useOptimize';
 import { useSettings } from '../hooks/useSettings';
 import { useClipboard } from '../hooks/useClipboard';
 import { useWindow } from '../hooks/useWindow';
+import { useAppearance } from '../hooks/useAppearance';
 import { hideCurrentWindow, showWindow } from '../lib/tauri';
 
 export default function MainWindow() {
@@ -53,6 +54,8 @@ export default function MainWindow() {
       }, 0);
     }
   }, []);
+
+  useAppearance(settings);
 
   return (
     <MainLayout

@@ -49,6 +49,20 @@ export async function setSettings(settings: Settings): Promise<boolean> {
   }
 }
 
+export async function setWindowOpacity(label: string, opacity: number): Promise<boolean> {
+  try {
+    return await invoke<boolean>('set_window_opacity', { label, opacity });
+  } catch (error) {
+    console.error('Failed to set window opacity:', error);
+    return false;
+  }
+}
+
+export async function setCurrentWindowOpacity(opacity: number): Promise<boolean> {
+  const win = getCurrentWebviewWindow();
+  return setWindowOpacity(win.label, opacity);
+}
+
 export async function readClipboard(): Promise<string> {
   try {
     const text = await readText();
@@ -119,6 +133,14 @@ export function listenShowExplain(
   callback: (text: string) => void,
 ): Promise<UnlistenFn> {
   return listen('show-explain', (event: Event<string>) => {
+    callback(event.payload);
+  });
+}
+
+export function listenSettingsChanged(
+  callback: (settings: Settings) => void,
+): Promise<UnlistenFn> {
+  return listen('settings-changed', (event: Event<Settings>) => {
     callback(event.payload);
   });
 }

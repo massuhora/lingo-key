@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 use crate::AppState;
-use tauri::Manager;
+use tauri::{Emitter, Manager};
 
 fn default_main_hotkey() -> String {
     "CommandOrControl+Shift+L".to_string()
@@ -21,6 +21,14 @@ fn default_settings_hotkey() -> String {
 
 fn default_always_on_top() -> bool {
     true
+}
+
+fn default_theme() -> String {
+    "dark".to_string()
+}
+
+fn default_opacity() -> f64 {
+    1.0
 }
 
 fn default_base_url() -> String {
@@ -67,6 +75,10 @@ pub struct AppSettings {
     pub auto_start: bool,
     #[serde(default = "default_always_on_top")]
     pub always_on_top: bool,
+    #[serde(default = "default_theme")]
+    pub theme: String,
+    #[serde(default = "default_opacity")]
+    pub opacity: f64,
     #[serde(default)]
     pub ai_provider: AiProvider,
 }
@@ -80,6 +92,8 @@ impl Default for AppSettings {
             output_mode: default_output_mode(),
             auto_start: false,
             always_on_top: default_always_on_top(),
+            theme: default_theme(),
+            opacity: default_opacity(),
             ai_provider: AiProvider::default(),
         }
     }
@@ -99,6 +113,12 @@ impl AppSettings {
         }
         if self.output_mode.trim().is_empty() {
             self.output_mode = default_output_mode();
+        }
+        if self.theme.trim().is_empty() {
+            self.theme = default_theme();
+        }
+        if self.opacity < 0.0 || self.opacity > 1.0 || self.opacity.is_nan() {
+            self.opacity = default_opacity();
         }
         if self.ai_provider.base_url.trim().is_empty() {
             self.ai_provider.base_url = default_base_url();
@@ -145,6 +165,7 @@ pub async fn set_settings(
     for label in ["main", "explain", "settings"] {
         if let Some(window) = app.get_webview_window(label) {
             let _: Result<(), _> = window.set_always_on_top(settings.always_on_top);
+            let _: Result<bool, _> = crate::commands::window::apply_window_opacity(&window, settings.opacity);
         }
     }
 
@@ -157,6 +178,8 @@ pub async fn set_settings(
     if let Err(e) = crate::register_hotkeys(&app, &settings, &state) {
         eprintln!("Failed to re-register hotkeys: {}", e);
     }
+
+    let _ = app.emit("settings-changed", &settings);
 
     Ok(settings)
 }

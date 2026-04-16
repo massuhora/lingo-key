@@ -1,4 +1,5 @@
 export type OutputMode = 'conservative' | 'enhanced';
+export type Theme = 'dark' | 'light';
 
 export interface AiProvider {
   baseUrl: string;
@@ -13,6 +14,8 @@ export interface Settings {
   outputMode: OutputMode;
   autoStart: boolean;
   alwaysOnTop: boolean;
+  theme: Theme;
+  opacity: number;
   aiProvider: AiProvider;
 }
 
@@ -27,6 +30,8 @@ export interface AppSettings {
   outputMode: OutputMode;
   autoStart: boolean;
   alwaysOnTop: boolean;
+  theme: Theme;
+  opacity: number;
   aiProvider: AiProvider;
 }
 

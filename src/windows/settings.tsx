@@ -3,14 +3,15 @@ import ReactDOM from 'react-dom/client';
 import '../index.css';
 import { SettingsLayout } from '../components/windows/SettingsLayout';
 import { useWindow } from '../hooks/useWindow';
-import { getSettings, setSettings } from '../lib/tauri';
+import { useAppearance } from '../hooks/useAppearance';
+import { getSettings, setSettings, setWindowOpacity } from '../lib/tauri';
 import { DEFAULT_SETTINGS, toAppSettings, toSettings, mergeSettings } from '../lib/settings';
 import type { AppSettings, Settings } from '../types';
 
 function SettingsWindow() {
   const [backendSettings, setBackendSettings] = useState<Settings>(DEFAULT_SETTINGS);
   const [uiSettings, setUiSettings] = useState<AppSettings>(toAppSettings(DEFAULT_SETTINGS));
-  const [, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
   const [, setError] = useState<string | null>(null);
 
   useWindow({ type: 'settings', hideOnBlur: false });
@@ -28,6 +29,17 @@ function SettingsWindow() {
         setLoading(false);
       });
   }, []);
+
+  useAppearance(uiSettings);
+
+  useEffect(() => {
+    if (loading) return;
+
+    void Promise.all([
+      setWindowOpacity('main', uiSettings.opacity),
+      setWindowOpacity('explain', uiSettings.opacity),
+    ]);
+  }, [loading, uiSettings.opacity]);
 
   const hasChanges = useMemo(() => {
     return JSON.stringify(uiSettings) !== JSON.stringify(toAppSettings(backendSettings));

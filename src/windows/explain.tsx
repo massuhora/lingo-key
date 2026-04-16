@@ -3,8 +3,10 @@ import ReactDOM from 'react-dom/client';
 import '../index.css';
 import { ExplainLayout } from '../components/windows/ExplainLayout';
 import { useExplain } from '../hooks/useExplain';
+import { useSettings } from '../hooks/useSettings';
 import { useClipboard } from '../hooks/useClipboard';
 import { useWindow } from '../hooks/useWindow';
+import { useAppearance } from '../hooks/useAppearance';
 import { hideCurrentWindow, listenClipboardText, readClipboard } from '../lib/tauri';
 import type { ExplainResult } from '../types';
 
@@ -16,6 +18,7 @@ const EMPTY_RESULT: ExplainResult = {
 
 function ExplainWindow() {
   const { result, loading, error, run } = useExplain();
+  const { settings } = useSettings();
   const { text: clipboardText, read } = useClipboard();
   const [originalText, setOriginalText] = useState('');
   const isDraggingRef = useRef(false);
@@ -25,6 +28,8 @@ function ExplainWindow() {
     hideOnBlur: true,
     shouldHideOnBlur: () => !isDraggingRef.current,
   });
+
+  useAppearance(settings);
 
   const handleDragStateChange = useCallback((dragging: boolean) => {
     isDraggingRef.current = dragging;

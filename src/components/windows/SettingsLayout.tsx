@@ -1,6 +1,6 @@
 import { RotateCcw, Save } from "lucide-react";
 import { cn } from "../../lib/utils";
-import type { AppSettings, OutputMode } from "../../types";
+import type { AppSettings, OutputMode, Theme } from "../../types";
 import {
   Button,
   Card,
@@ -10,6 +10,7 @@ import {
   HotkeyInput,
   Input,
   Select,
+  Slider,
   TitleBar,
   Toggle,
 } from "../ui";
@@ -26,6 +27,11 @@ interface SettingsLayoutProps {
 const outputOptions = [
   { value: "conservative", label: "保守" },
   { value: "enhanced", label: "增强" },
+];
+
+const themeOptions = [
+  { value: "dark", label: "深色" },
+  { value: "light", label: "浅色" },
 ];
 
 export function SettingsLayout({
@@ -77,6 +83,33 @@ export function SettingsLayout({
             <p className="mt-2 text-xs text-foreground/50">
               保守模式更接近原文；增强模式会进行更积极的改进。
             </p>
+          </CardContent>
+        </Card>
+
+        {/* Appearance */}
+        <Card>
+          <CardHeader>
+            <CardTitle>外观</CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-4">
+            <Select
+              label="主题"
+              value={settings.theme}
+              onChange={(e) =>
+                updateSetting("theme", e.target.value as Theme)
+              }
+              options={themeOptions}
+            />
+            <Slider
+              label="窗口不透明度"
+              min={0.3}
+              max={1.0}
+              step={0.05}
+              value={settings.opacity}
+              onChange={(e) =>
+                updateSetting("opacity", parseFloat(e.target.value))
+              }
+            />
           </CardContent>
         </Card>
 

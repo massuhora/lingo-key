@@ -60,9 +60,11 @@ pub fn register_hotkeys(
     gs.on_shortcut(main_hotkey.as_str(), move |app, _shortcut, event| {
         if event.state == ShortcutState::Pressed {
             if let Some(window) = app.get_webview_window("main") {
+                let state = app.state::<AppState>();
                 let _ = window.unminimize();
                 let _ = window.center();
                 let _ = window.show();
+                let _ = commands::window::apply_managed_window_preferences(&window, &state);
                 let _ = window.set_focus();
             }
         }
@@ -105,9 +107,11 @@ pub fn register_hotkeys(
     gs.on_shortcut(settings_hotkey.as_str(), move |app, _shortcut, event| {
         if event.state == ShortcutState::Pressed {
             if let Some(window) = app.get_webview_window("settings") {
+                let state = app.state::<AppState>();
                 let _ = window.unminimize();
                 let _ = window.center();
                 let _ = window.show();
+                let _ = commands::window::apply_managed_window_preferences(&window, &state);
                 let _ = window.set_focus();
             }
         }
@@ -155,6 +159,7 @@ pub fn run() {
             commands::window::hide_window,
             commands::window::focus_window,
             commands::window::start_dragging,
+            commands::window::set_window_opacity,
             commands::settings::get_settings,
             commands::settings::set_settings,
             commands::settings::reset_settings,
@@ -196,6 +201,7 @@ pub fn run() {
             for label in ["main", "explain", "settings"] {
                 if let Some(window) = app.get_webview_window(label) {
                     let _ = window.set_always_on_top(settings.always_on_top);
+                    let _ = commands::window::apply_window_opacity(&window, settings.opacity);
                 }
             }
 
@@ -228,9 +234,11 @@ pub fn run() {
                     match event.id.as_ref() {
                         "show" => {
                             if let Some(window) = app.get_webview_window("main") {
+                                let state = app.state::<AppState>();
                                 let _ = window.unminimize();
                                 let _ = window.center();
                                 let _ = window.show();
+                                let _ = commands::window::apply_managed_window_preferences(&window, &state);
                                 let _ = window.set_focus();
                             }
                         }
@@ -249,9 +257,11 @@ pub fn run() {
                     {
                         let app = tray.app_handle();
                         if let Some(window) = app.get_webview_window("main") {
+                            let state = app.state::<AppState>();
                             let _ = window.unminimize();
                             let _ = window.center();
                             let _ = window.show();
+                            let _ = commands::window::apply_managed_window_preferences(&window, &state);
                             let _ = window.set_focus();
                         }
                     }

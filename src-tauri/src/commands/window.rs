@@ -1,5 +1,6 @@
 use tauri::{Emitter, Manager};
 
+use crate::AppState;
 use crate::cursor::get_cursor_position;
 
 fn ensure_window_visible(window: &tauri::WebviewWindow) -> Result<(), String> {
@@ -9,20 +10,73 @@ fn ensure_window_visible(window: &tauri::WebviewWindow) -> Result<(), String> {
     Ok(())
 }
 
+#[cfg(target_os = "windows")]
+fn apply_native_window_opacity(window: &tauri::WebviewWindow, opacity: f64) -> Result<bool, String> {
+    use winapi::um::winuser::{
+        GetWindowLongW, SetLayeredWindowAttributes, SetWindowLongW, GWL_EXSTYLE, LWA_ALPHA,
+        WS_EX_LAYERED,
+    };
+
+    let hwnd = window.hwnd().map_err(|e| e.to_string())?;
+    let hwnd = hwnd.0 as _;
+    let alpha = (opacity.clamp(0.0, 1.0) * 255.0).round() as u8;
+
+    unsafe {
+        let ex_style = GetWindowLongW(hwnd, GWL_EXSTYLE);
+        if ex_style & WS_EX_LAYERED as i32 == 0 {
+            SetWindowLongW(hwnd, GWL_EXSTYLE, ex_style | WS_EX_LAYERED as i32);
+        }
+
+        if SetLayeredWindowAttributes(hwnd, 0, alpha, LWA_ALPHA) == 0 {
+            return Err("failed to set window opacity".to_string());
+        }
+    }
+
+    Ok(true)
+}
+
+#[cfg(not(target_os = "windows"))]
+fn apply_native_window_opacity(_window: &tauri::WebviewWindow, _opacity: f64) -> Result<bool, String> {
+    Ok(false)
+}
+
+pub fn apply_window_opacity(window: &tauri::WebviewWindow, opacity: f64) -> Result<bool, String> {
+    apply_native_window_opacity(window, opacity)
+}
+
+pub fn apply_managed_window_preferences(
+    window: &tauri::WebviewWindow,
+    state: &AppState,
+) -> Result<(), String> {
+    let settings = state
+        .settings
+        .lock()
+        .map_err(|e| e.to_string())?
+        .clone();
+
+    window
+        .set_always_on_top(settings.always_on_top)
+        .map_err(|e| e.to_string())?;
+    apply_window_opacity(window, settings.opacity)?;
+
+    Ok(())
+}
+
 #[tauri::command]
-pub fn show_main_window(app: tauri::AppHandle) -> Result<(), String> {
+pub fn show_main_window(app: tauri::AppHandle, state: tauri::State<'_, AppState>) -> Result<(), String> {
     let window = app
         .get_webview_window("main")
         .ok_or("main window not found")?;
     ensure_window_visible(&window)?;
     window.center().map_err(|e| e.to_string())?;
     window.show().map_err(|e| e.to_string())?;
+    apply_managed_window_preferences(&window, &state)?;
     window.set_focus().map_err(|e| e.to_string())?;
     Ok(())
 }
 
 #[tauri::command]
-pub fn show_explain_window(app: tauri::AppHandle) -> Result<(), String> {
+pub fn show_explain_window(app: tauri::AppHandle, state: tauri::State<'_, AppState>) -> Result<(), String> {
     let window = app
         .get_webview_window("explain")
         .ok_or("explain window not found")?;
@@ -63,6 +117,7 @@ pub fn show_explain_window(app: tauri::AppHandle) -> Result<(), String> {
         .map_err(|e| e.to_string())?;
     ensure_window_visible(&window)?;
     window.show().map_err(|e| e.to_string())?;
+    apply_managed_window_preferences(&window, &state)?;
     window.set_focus().map_err(|e| e.to_string())?;
 
     Ok(())
@@ -70,19 +125,21 @@ pub fn show_explain_window(app: tauri::AppHandle) -> Result<(), String> {
 
 /// Show the explain window and emit the provided text to it.
 pub fn show_explain_with_text(app: &tauri::AppHandle, text: String) -> Result<(), String> {
-    show_explain_window(app.clone())?;
+    let state = app.state::<AppState>();
+    show_explain_window(app.clone(), state)?;
     app.emit_to("explain", "clipboard-text", text)
         .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
-pub fn show_settings_window(app: tauri::AppHandle) -> Result<(), String> {
+pub fn show_settings_window(app: tauri::AppHandle, state: tauri::State<'_, AppState>) -> Result<(), String> {
     let window = app
         .get_webview_window("settings")
         .ok_or("settings window not found")?;
     ensure_window_visible(&window)?;
     window.center().map_err(|e| e.to_string())?;
     window.show().map_err(|e| e.to_string())?;
+    apply_managed_window_preferences(&window, &state)?;
     window.set_focus().map_err(|e| e.to_string())?;
     Ok(())
 }
@@ -109,4 +166,16 @@ pub fn start_dragging(app: tauri::AppHandle, label: String) -> Result<(), String
         .get_webview_window(&label)
         .ok_or_else(|| format!("{} window not found", label))?;
     window.start_dragging().map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub fn set_window_opacity(
+    app: tauri::AppHandle,
+    label: String,
+    opacity: f64,
+) -> Result<bool, String> {
+    let window = app
+        .get_webview_window(&label)
+        .ok_or_else(|| format!("{} window not found", label))?;
+    apply_window_opacity(&window, opacity)
 }

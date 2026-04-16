@@ -17,7 +17,7 @@
 | 层级     | 技术                                      |
 | -------- | ----------------------------------------- |
 | 前端框架 | React 19 + TypeScript 5.8                 |
-| 样式方案 | TailwindCSS 3（Dark OLED 主题）           |
+| 样式方案 | TailwindCSS 3（Dark OLED + Light 双主题） |
 | 构建工具 | Vite 7                                    |
 | 桌面框架 | Tauri 2（Rust）                           |
 | 测试框架 | Vitest 4 + jsdom + @testing-library/react |
@@ -51,9 +51,9 @@ lingokey/
 ├── docs/PRD.md               # 产品需求文档
 ├── src/
 │   ├── components/
-│   │   ├── ui/               # 基础 UI 组件（Button、Input、Card、HotkeyInput 等）
+│   │   ├── ui/               # 基础 UI 组件（Button、Input、Card、HotkeyInput、Slider 等）
 │   │   └── windows/          # 窗口级布局组件（MainLayout、ExplainLayout、SettingsLayout）
-│   ├── hooks/                # React Hooks（useOptimize、useExplain、useSettings、useWindow、useClipboard）
+│   ├── hooks/                # React Hooks（useOptimize、useExplain、useSettings、useWindow、useClipboard、useAppearance）
 │   ├── lib/                  # 工具函数与 Tauri API 封装
 │   │   ├── tauri.ts          # Tauri 命令封装（optimizeText、explainText、窗口操作等）
 │   │   ├── diff.ts           # 词级 diff 算法（用于高亮修改）
@@ -173,7 +173,7 @@ npm run test:watch
 
 - **必须使用 TailwindCSS**，不要在组件里写大量内联 CSS。
 - 主题色通过 `tailwind.config.js` 自定义令牌使用，例如 `bg-background`、`text-foreground`、`border-border`。
-- 设计系统为 **Dark OLED**，不支持 Light Mode。
+- 设计系统支持 **Dark OLED** 和 **Light Mode**，通过 `theme` 设置切换，CSS 变量定义在 `src/index.css`。
 - 动画时长 150–300ms，优先使用 `transform` / `opacity`。
 - 图标统一使用 `lucide-react`，**不要用 emoji 代替图标**。
 - 类名合并使用项目内建的 `cn(...)`（`src/lib/utils.ts`）。
@@ -252,6 +252,12 @@ pub struct AppState {
 同时修改两处：
 - 前端：`src/lib/settings.ts` 中的 `DEFAULT_SETTINGS`
 - 后端：`src-tauri/src/commands/settings.rs` 中的 `default_*_hotkey()` 函数
+
+### 修改默认主题或不透明度
+
+同时修改两处：
+- 前端：`src/lib/settings.ts` 中的 `DEFAULT_SETTINGS`（`theme`、`opacity`）
+- 后端：`src-tauri/src/commands/settings.rs` 中的 `default_theme()` 和 `default_opacity()`
 
 ### 新增 UI 组件
 

@@ -1,6 +1,10 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import type { Settings } from '../types';
-import { getSettings, setSettings as saveSettings } from '../lib/tauri';
+import {
+  getSettings,
+  listenSettingsChanged,
+  setSettings as saveSettings,
+} from '../lib/tauri';
 import { DEFAULT_SETTINGS, mergeSettings } from '../lib/settings';
 
 export interface UseSettingsReturn {
@@ -18,6 +22,8 @@ export function useSettings(): UseSettingsReturn {
 
   useEffect(() => {
     isMounted.current = true;
+    let unlisten: (() => void) | undefined;
+
     getSettings()
       .then((fetched) => {
         if (!isMounted.current) return;
@@ -32,8 +38,22 @@ export function useSettings(): UseSettingsReturn {
         setLoading(false);
       });
 
+    listenSettingsChanged((next) => {
+      if (!isMounted.current) return;
+      setLocalSettings(mergeSettings(next));
+      setError(null);
+    })
+      .then((dispose) => {
+        unlisten = dispose;
+      })
+      .catch((err) => {
+        if (!isMounted.current) return;
+        setError(err instanceof Error ? err.message : String(err));
+      });
+
     return () => {
       isMounted.current = false;
+      unlisten?.();
     };
   }, []);
 
