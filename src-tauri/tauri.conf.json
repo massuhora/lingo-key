@@ -1,0 +1,115 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "LingoKey",
+  "version": "0.1.0",
+  "identifier": "com.lingokey.app",
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "devUrl": "http://localhost:1420",
+    "beforeBuildCommand": "npm run build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "LingoKey",
+        "url": "/",
+        "width": 520,
+        "height": 420,
+        "minWidth": 400,
+        "minHeight": 320,
+        "decorations": false,
+        "transparent": true,
+        "alwaysOnTop": true,
+        "visible": false,
+        "skipTaskbar": false,
+        "center": true
+      },
+      {
+        "label": "explain",
+        "title": "解释",
+        "url": "/explain",
+        "width": 360,
+        "height": 280,
+        "minWidth": 320,
+        "minHeight": 240,
+        "decorations": false,
+        "transparent": true,
+        "alwaysOnTop": true,
+        "visible": false,
+        "skipTaskbar": true,
+        "center": false
+      },
+      {
+        "label": "settings",
+        "title": "设置",
+        "url": "/settings",
+        "width": 480,
+        "height": 520,
+        "minWidth": 400,
+        "minHeight": 440,
+        "decorations": false,
+        "transparent": true,
+        "alwaysOnTop": true,
+        "visible": false,
+        "skipTaskbar": true,
+        "center": true
+      }
+    ],
+    "security": {
+      "csp": null,
+      "capabilities": [
+        {
+          "identifier": "default",
+          "windows": ["main", "explain", "settings"],
+          "permissions": [
+            "core:default",
+            "core:window:default",
+            "core:window:allow-show",
+            "core:window:allow-hide",
+            "core:window:allow-set-focus",
+            "core:window:allow-set-position",
+            "core:window:allow-center",
+            "core:window:allow-start-dragging",
+            "core:window:allow-set-always-on-top",
+            "core:window:allow-close",
+            "core:window:allow-minimize",
+            "core:app:default",
+            "core:app:allow-app-show",
+            "core:app:allow-app-hide",
+            "core:tray:default",
+            "global-shortcut:allow-is-registered",
+            "global-shortcut:allow-register",
+            "global-shortcut:allow-unregister",
+            "global-shortcut:allow-unregister-all",
+            "clipboard-manager:allow-read-text",
+            "clipboard-manager:allow-write-text",
+            "store:allow-get",
+            "store:allow-set",
+            "store:allow-save",
+            "store:allow-load",
+            "store:allow-keys",
+            "store:allow-delete",
+            "store:allow-clear",
+            "os:allow-os-type",
+            "autostart:allow-enable",
+            "autostart:allow-disable",
+            "autostart:allow-is-enabled"
+          ]
+        }
+      ]
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ]
+  }
+}
