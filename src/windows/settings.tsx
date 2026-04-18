@@ -4,6 +4,7 @@ import '../index.css';
 import { SettingsLayout } from '../components/windows/SettingsLayout';
 import { useWindow } from '../hooks/useWindow';
 import { useAppearance } from '../hooks/useAppearance';
+import { I18nProvider, translate } from '../lib/i18n';
 import { getSettings, setSettings, setWindowOpacity } from '../lib/tauri';
 import { DEFAULT_SETTINGS, toAppSettings, toSettings, mergeSettings } from '../lib/settings';
 import type { AppSettings, Settings } from '../types';
@@ -55,7 +56,7 @@ function SettingsWindow() {
     if (ok) {
       setBackendSettings(nextBackend);
     } else {
-      setError('保存设置失败');
+      setError(translate(uiSettings.locale, 'settings.saveFailed'));
     }
   }, [uiSettings]);
 
@@ -65,13 +66,15 @@ function SettingsWindow() {
   }, [backendSettings]);
 
   return (
-    <SettingsLayout
-      settings={uiSettings}
-      onChange={handleChange}
-      onSave={handleSave}
-      onReset={handleReset}
-      hasChanges={hasChanges}
-    />
+    <I18nProvider locale={uiSettings.locale}>
+      <SettingsLayout
+        settings={uiSettings}
+        onChange={handleChange}
+        onSave={handleSave}
+        onReset={handleReset}
+        hasChanges={hasChanges}
+      />
+    </I18nProvider>
   );
 }
 

@@ -1,4 +1,5 @@
 import { BookOpen } from "lucide-react";
+import { useI18n } from "../../lib/i18n";
 import { cn } from "../../lib/utils";
 import { TitleBar, WindowResizeHandles } from "../ui";
 import type { ExplainResult } from "../../types";
@@ -16,17 +17,14 @@ export function ExplainLayout({
   targetLanguageLabel,
   className,
 }: ExplainLayoutProps) {
+  const { t } = useI18n();
+
   return (
-    <div
-      className={cn(
-        "window-shell",
-        className,
-      )}
-    >
+    <div className={cn("window-shell", className)}>
       <WindowResizeHandles />
 
       <TitleBar
-        title="解释"
+        title={t("explain.title")}
         showMinimize={false}
         showClose
         dragBehavior="manual"
@@ -35,17 +33,17 @@ export function ExplainLayout({
       <div className="flex flex-1 flex-col gap-3 overflow-auto px-4 pb-4 pt-4">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <span className="status-chip">Instant Explain</span>
+            <span className="status-chip">{t("explain.status")}</span>
             <span className="status-chip">{languagePairLabel}</span>
           </div>
           <span className="font-mono text-[11px] text-foreground/42">
-            选中文本后触发
+            {t("explain.triggerHint")}
           </span>
         </div>
 
         <section className="panel-surface px-4 py-4">
           <span className="eyebrow-label">
-            Original
+            {t("explain.original")}
           </span>
           <p className="mt-2 text-sm font-medium leading-6 text-foreground">
             {result.original}
@@ -58,7 +56,7 @@ export function ExplainLayout({
           </div>
           <div className="flex flex-col gap-1">
             <span className="eyebrow-label">
-              {targetLanguageLabel}释义
+              {t("explain.meaning", { language: targetLanguageLabel })}
             </span>
             <p className="text-sm leading-6 text-foreground/90">{result.meaning}</p>
           </div>

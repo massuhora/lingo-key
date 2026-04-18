@@ -1,6 +1,18 @@
 use serde::{Deserialize, Serialize};
 use crate::AppState;
 
+fn localized(locale: &str, zh: &str, en: &str) -> String {
+    if crate::commands::settings::is_chinese_locale(locale) {
+        zh.to_string()
+    } else {
+        en.to_string()
+    }
+}
+
+fn localized_error(locale: &str, zh: &str, en: &str, details: impl std::fmt::Display) -> String {
+    format!("{}: {}", localized(locale, zh, en), details)
+}
+
 #[derive(Serialize, Clone, Debug)]
 pub struct ExplainResult {
     pub original: String,
@@ -112,9 +124,14 @@ async fn call_llm(
     provider: &crate::commands::settings::AiProvider,
     messages: Vec<ChatMessage>,
     json_mode: bool,
+    locale: &str,
 ) -> Result<String, String> {
     if provider.api_key.trim().is_empty() {
-        return Err("API key is not configured. Please set it in Settings > AI Provider.".to_string());
+        return Err(localized(
+            locale,
+            "尚未配置 API 密钥，请先在“设置 > AI 服务商”中填写。",
+            "API key is not configured. Please set it in Settings > AI Provider.",
+        ));
     }
 
     let base_url = provider.base_url.trim_end_matches('/');
@@ -123,7 +140,7 @@ async fn call_llm(
     let client = reqwest::Client::builder()
         .timeout(std::time::Duration::from_secs(30))
         .build()
-        .map_err(|e| e.to_string())?;
+        .map_err(|e| localized_error(locale, "初始化请求客户端失败", "Failed to initialize request client", e))?;
 
     let mut request = ChatCompletionRequest {
         model: provider.model.clone(),
@@ -145,25 +162,25 @@ async fn call_llm(
         .json(&request)
         .send()
         .await
-        .map_err(|e| format!("Request failed: {}", e))?;
+        .map_err(|e| localized_error(locale, "请求失败", "Request failed", e))?;
 
     if !response.status().is_success() {
         let status = response.status();
         let body = response.text().await.unwrap_or_default();
-        return Err(format!("LLM API error ({}): {}", status, body));
+        return Err(localized_error(locale, &format!("LLM 接口错误 ({})", status), &format!("LLM API error ({})", status), body));
     }
 
     let completion: ChatCompletionResponse = response
         .json()
         .await
-        .map_err(|e| format!("Failed to parse response: {}", e))?;
+        .map_err(|e| localized_error(locale, "解析接口响应失败", "Failed to parse response", e))?;
 
     completion
         .choices
         .into_iter()
         .next()
         .map(|c| c.message.content.trim().to_string())
-        .ok_or_else(|| "Empty response from LLM".to_string())
+        .ok_or_else(|| localized(locale, "LLM 返回了空响应", "Empty response from LLM"))
 }
 
 /// Optimize the given text into the configured target language.
@@ -184,7 +201,7 @@ pub async fn optimize_text(
         &settings.source_language,
         &settings.target_language,
     );
-    match call_llm(&settings.ai_provider, messages, false).await {
+    match call_llm(&settings.ai_provider, messages, false, &settings.locale).await {
         Ok(result) => Ok(result),
         Err(e) => {
             // Graceful fallback with a clear hint when API is unavailable.
@@ -197,7 +214,11 @@ pub async fn optimize_text(
             } else {
                 fallback
             };
-            Err(format!("{}\n\n(Fallback result: {})", e, fallback))
+            if crate::commands::settings::is_chinese_locale(&settings.locale) {
+                Err(format!("{}\n\n备用结果：{}", e, fallback))
+            } else {
+                Err(format!("{}\n\nFallback result: {}", e, fallback))
+            }
         }
     }
 }
@@ -218,7 +239,7 @@ pub async fn explain_text(
         &settings.source_language,
         &settings.target_language,
     );
-    match call_llm(&settings.ai_provider, messages, true).await {
+    match call_llm(&settings.ai_provider, messages, true, &settings.locale).await {
         Ok(raw) => {
             // Try to parse JSON response.
             let cleaned = raw
@@ -235,7 +256,13 @@ pub async fn explain_text(
             }
 
             let parsed: RawExplain = serde_json::from_str(cleaned)
-                .map_err(|e| format!("Failed to parse explanation JSON: {}\nRaw: {}", e, raw))?;
+                .map_err(|e| {
+                    if crate::commands::settings::is_chinese_locale(&settings.locale) {
+                        format!("解析解释结果 JSON 失败: {}\n原始内容: {}", e, raw)
+                    } else {
+                        format!("Failed to parse explanation JSON: {}\nRaw: {}", e, raw)
+                    }
+                })?;
 
             Ok(ExplainResult {
                 original: text,

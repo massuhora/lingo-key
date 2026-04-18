@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { X, Minus } from "lucide-react";
+import { useI18n } from "../../lib/i18n";
 import { cn } from "../../lib/utils";
 
 interface TitleBarProps {
@@ -8,7 +9,7 @@ interface TitleBarProps {
   showClose?: boolean;
   className?: string;
   children?: React.ReactNode;
-  dragBehavior?: 'native' | 'manual';
+  dragBehavior?: "native" | "manual";
   onDragStateChange?: (dragging: boolean) => void;
 }
 
@@ -18,9 +19,10 @@ export function TitleBar({
   showClose = true,
   className,
   children,
-  dragBehavior = 'native',
+  dragBehavior = "native",
   onDragStateChange,
 }: TitleBarProps) {
+  const { t } = useI18n();
   const [isHovered, setIsHovered] = useState(false);
   const [windowApi, setWindowApi] = useState<{
     minimize: () => Promise<void>;
@@ -41,7 +43,7 @@ export function TitleBar({
         });
       })
       .catch(() => {
-        // Tauri not available (e.g. browser dev)
+        // Tauri not available in browser preview.
       });
     return () => {
       mounted = false;
@@ -57,7 +59,7 @@ export function TitleBar({
   };
 
   const handleDragStart = async (event: React.MouseEvent<HTMLDivElement>) => {
-    if (dragBehavior !== 'manual') return;
+    if (dragBehavior !== "manual") return;
     if (event.button !== 0) return;
     if ((event.target as HTMLElement | null)?.closest("button")) return;
 
@@ -82,11 +84,11 @@ export function TitleBar({
     >
       <div
         className="flex flex-1 items-center gap-3 px-4"
-        data-window-drag-handle={dragBehavior === 'manual' ? 'true' : undefined}
-        data-tauri-drag-region={dragBehavior === 'native' ? true : undefined}
-        onMouseDown={(e) => {
-          if (dragBehavior === 'manual') {
-            void handleDragStart(e);
+        data-window-drag-handle={dragBehavior === "manual" ? "true" : undefined}
+        data-tauri-drag-region={dragBehavior === "native" ? true : undefined}
+        onMouseDown={(event) => {
+          if (dragBehavior === "manual") {
+            void handleDragStart(event);
           }
         }}
       >
@@ -96,8 +98,8 @@ export function TitleBar({
         />
         {title && (
           <span
-            data-window-drag-handle={dragBehavior === 'manual' ? 'true' : undefined}
-            data-tauri-drag-region={dragBehavior === 'native' ? true : undefined}
+            data-window-drag-handle={dragBehavior === "manual" ? "true" : undefined}
+            data-tauri-drag-region={dragBehavior === "native" ? true : undefined}
             className="font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-foreground/72"
           >
             {title}
@@ -116,7 +118,7 @@ export function TitleBar({
               "focus-visible:outline-none focus-visible:bg-primary/90",
               !isHovered && "opacity-60",
             )}
-            aria-label="最小化"
+            aria-label={t("common.minimize")}
           >
             <Minus className="h-4 w-4" />
           </button>
@@ -130,7 +132,7 @@ export function TitleBar({
               "focus-visible:outline-none focus-visible:bg-destructive focus-visible:text-on-primary",
               !isHovered && "opacity-60",
             )}
-            aria-label="关闭"
+            aria-label={t("common.close")}
           >
             <X className="h-4 w-4" />
           </button>

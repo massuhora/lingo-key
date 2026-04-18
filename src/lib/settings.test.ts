@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   DEFAULT_SETTINGS,
   isValidHotkey,
+  normalizeLocale,
   normalizeOutputMode,
   normalizeLanguage,
   mergeSettings,
@@ -51,6 +52,17 @@ describe('normalizeOutputMode', () => {
   });
 });
 
+describe('normalizeLocale', () => {
+  it('accepts supported locales', () => {
+    expect(normalizeLocale('en-US')).toBe('en-US');
+  });
+
+  it('falls back to zh-CN for unsupported values', () => {
+    expect(normalizeLocale('fr-FR')).toBe('zh-CN');
+    expect(normalizeLocale(undefined)).toBe('zh-CN');
+  });
+});
+
 describe('normalizeLanguage', () => {
   it('accepts supported languages', () => {
     expect(normalizeLanguage('japanese', 'english')).toBe('japanese');
@@ -86,6 +98,7 @@ describe('mergeSettings', () => {
 
   it('fills missing language pair with defaults', () => {
     const merged = mergeSettings({ sourceLanguage: 'japanese' });
+    expect(merged.locale).toBe(DEFAULT_SETTINGS.locale);
     expect(merged.sourceLanguage).toBe('japanese');
     expect(merged.targetLanguage).toBe(DEFAULT_SETTINGS.targetLanguage);
   });
@@ -97,6 +110,7 @@ describe('toAppSettings / toSettings round-trip', () => {
     expect(app.hotkeys.main).toBe(DEFAULT_SETTINGS.mainHotkey);
     expect(app.hotkeys.explain).toBe(DEFAULT_SETTINGS.explainHotkey);
     expect(app.hotkeys.settings).toBe(DEFAULT_SETTINGS.settingsHotkey);
+    expect(app.locale).toBe(DEFAULT_SETTINGS.locale);
     expect(app.sourceLanguage).toBe(DEFAULT_SETTINGS.sourceLanguage);
     expect(app.targetLanguage).toBe(DEFAULT_SETTINGS.targetLanguage);
     expect(app.outputMode).toBe(DEFAULT_SETTINGS.outputMode);
@@ -111,6 +125,7 @@ describe('toAppSettings / toSettings round-trip', () => {
     const custom = {
       ...DEFAULT_SETTINGS,
       mainHotkey: 'Ctrl+Alt+L',
+      locale: 'en-US' as const,
       sourceLanguage: 'japanese' as const,
       targetLanguage: 'english' as const,
       outputMode: 'conservative' as const,

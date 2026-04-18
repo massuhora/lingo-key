@@ -1,5 +1,6 @@
 export type OutputMode = 'conservative' | 'enhanced';
 export type Theme = 'dark' | 'light';
+export type Locale = 'zh-CN' | 'en-US';
 export type AppLanguage =
   | 'chinese'
   | 'english'
@@ -19,6 +20,7 @@ export interface Settings {
   mainHotkey: string;
   explainHotkey: string;
   settingsHotkey?: string;
+  locale: Locale;
   sourceLanguage: AppLanguage;
   targetLanguage: AppLanguage;
   outputMode: OutputMode;
@@ -37,6 +39,7 @@ export interface Hotkeys {
 
 export interface AppSettings {
   hotkeys: Hotkeys;
+  locale: Locale;
   sourceLanguage: AppLanguage;
   targetLanguage: AppLanguage;
   outputMode: OutputMode;

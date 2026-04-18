@@ -8,25 +8,20 @@ import { useClipboard } from '../hooks/useClipboard';
 import { useWindow } from '../hooks/useWindow';
 import { useAppearance } from '../hooks/useAppearance';
 import { listenClipboardText, readClipboard } from '../lib/tauri';
-import { LANGUAGE_LABELS } from '../lib/settings';
+import { getLanguageLabel, I18nProvider, translate } from '../lib/i18n';
 import type { ExplainResult } from '../types';
-
-const EMPTY_RESULT: ExplainResult = {
-  original: '',
-  meaning: '正在加载解释...',
-  context: '',
-};
 
 function ExplainWindow() {
   const { settings } = useSettings();
   const { result, loading, error, run } = useExplain(
     settings.sourceLanguage,
     settings.targetLanguage,
+    settings.locale,
   );
   const { text: clipboardText, read } = useClipboard();
   const [originalText, setOriginalText] = useState('');
-  const targetLanguageLabel = LANGUAGE_LABELS[settings.targetLanguage];
-  const languagePairLabel = `${LANGUAGE_LABELS[settings.sourceLanguage]} -> ${targetLanguageLabel}`;
+  const targetLanguageLabel = getLanguageLabel(settings.locale, settings.targetLanguage);
+  const languagePairLabel = `${getLanguageLabel(settings.locale, settings.sourceLanguage)} -> ${targetLanguageLabel}`;
 
   useWindow({
     type: 'explain',
@@ -89,21 +84,23 @@ function ExplainWindow() {
   const hasText = !!(originalText || clipboardText).trim();
 
   const displayResult: ExplainResult = result ?? {
-    ...EMPTY_RESULT,
-    original: originalText || clipboardText || '未检测到选中文本',
+    original: originalText || clipboardText || translate(settings.locale, 'explain.notDetected'),
     meaning: loading
-      ? '正在加载解释...'
+      ? translate(settings.locale, 'explain.loading')
       : (hasText
-          ? (error ?? '暂无解释。')
-          : '请先用鼠标划选一段文字，再按解释热键。如果已划选但仍失败，请尝试手动按 Ctrl+C 复制后再按热键。'),
+          ? (error ?? translate(settings.locale, 'explain.noExplanation'))
+          : translate(settings.locale, 'explain.noTextSelected')),
+    context: '',
   };
 
   return (
-    <ExplainLayout
-      result={displayResult}
-      languagePairLabel={languagePairLabel}
-      targetLanguageLabel={targetLanguageLabel}
-    />
+    <I18nProvider locale={settings.locale}>
+      <ExplainLayout
+        result={displayResult}
+        languagePairLabel={languagePairLabel}
+        targetLanguageLabel={targetLanguageLabel}
+      />
+    </I18nProvider>
   );
 }
 

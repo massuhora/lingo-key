@@ -10,9 +10,9 @@ import {
   Zap,
   type LucideIcon,
 } from "lucide-react";
+import { getLanguageOptions, getLocaleOptions, useI18n } from "../../lib/i18n";
 import { cn } from "../../lib/utils";
 import type { AppSettings, OutputMode, Theme } from "../../types";
-import { LANGUAGE_LABELS, LANGUAGE_OPTIONS } from "../../lib/settings";
 import {
   Button,
   Card,
@@ -36,37 +36,6 @@ interface SettingsLayoutProps {
   hasChanges?: boolean;
   className?: string;
 }
-
-const outputOptions = [
-  {
-    value: "conservative",
-    label: "保守",
-    description: "更接近原文语义和结构，适合轻量润色。",
-  },
-  {
-    value: "enhanced",
-    label: "增强",
-    description: "会更积极地重写表达，适合直接发给 AI。",
-  },
-];
-
-const themeOptions = [
-  {
-    value: "dark",
-    label: "深色",
-    description: "对比更强，适合夜间或深色工作区。",
-  },
-  {
-    value: "light",
-    label: "浅色",
-    description: "界面更轻盈，适合明亮桌面环境。",
-  },
-];
-
-const themeMeta: Record<Theme, string> = {
-  dark: "深色主题",
-  light: "浅色主题",
-};
 
 interface SettingsSectionCardProps {
   icon: LucideIcon;
@@ -114,6 +83,8 @@ export function SettingsLayout({
   hasChanges = false,
   className,
 }: SettingsLayoutProps) {
+  const { locale, t, getLanguageLabel } = useI18n();
+
   const updateSetting = <K extends keyof AppSettings>(
     key: K,
     value: AppSettings[K],
@@ -128,21 +99,52 @@ export function SettingsLayout({
     });
   };
 
+  const localeOptions = getLocaleOptions(locale).map((option) => ({
+    ...option,
+    description: option.label,
+  }));
+  const languageOptions = getLanguageOptions(locale);
+  const outputOptions = [
+    {
+      value: "conservative",
+      label: t("settings.outputMode.conservative"),
+      description: t("settings.outputMode.conservativeDescription"),
+    },
+    {
+      value: "enhanced",
+      label: t("settings.outputMode.enhanced"),
+      description: t("settings.outputMode.enhancedDescription"),
+    },
+  ];
+  const themeOptions = [
+    {
+      value: "dark",
+      label: t("settings.theme.dark"),
+      description: t("settings.theme.darkDescription"),
+    },
+    {
+      value: "light",
+      label: t("settings.theme.light"),
+      description: t("settings.theme.lightDescription"),
+    },
+  ];
+  const themeMeta: Record<Theme, string> = {
+    dark: t("settings.themeBadge.dark"),
+    light: t("settings.themeBadge.light"),
+  };
+
   const outputModeLabel =
     outputOptions.find((option) => option.value === settings.outputMode)?.label ??
-    "保守";
-  const languagePairLabel = `${LANGUAGE_LABELS[settings.sourceLanguage]} -> ${LANGUAGE_LABELS[settings.targetLanguage]}`;
-  const aiStatusLabel = settings.aiProvider.apiKey ? "已配置密钥" : "备用模式";
-  const preferenceStatus = settings.alwaysOnTop ? "置顶开启" : "按需显示";
+    t("settings.outputMode.conservative");
+  const localeLabel =
+    localeOptions.find((option) => option.value === settings.locale)?.label ?? settings.locale;
+  const languagePairLabel = `${getLanguageLabel(settings.sourceLanguage)} -> ${getLanguageLabel(settings.targetLanguage)}`;
+  const aiStatusLabel = settings.aiProvider.apiKey ? t("settings.aiConfigured") : t("settings.aiFallback");
+  const preferenceStatus = settings.alwaysOnTop ? t("settings.preferencesOnTop") : t("settings.preferencesOnDemand");
 
   return (
-    <div
-      className={cn(
-        "window-shell settings-backdrop",
-        className,
-      )}
-    >
-      <TitleBar title="设置" />
+    <div className={cn("window-shell settings-backdrop", className)}>
+      <TitleBar title={t("settings.title")} />
 
       <div className="relative flex flex-1 flex-col overflow-auto px-4 pb-4 pt-4">
         <div
@@ -153,12 +155,12 @@ export function SettingsLayout({
           <section className="panel-surface overflow-hidden px-5 py-5">
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0">
-                <p className="eyebrow-label">Workspace Preferences</p>
+                <p className="eyebrow-label">{t("settings.summaryEyebrow")}</p>
                 <h1 className="mt-2 text-[22px] font-semibold tracking-tight text-foreground">
-                  把 LingoKey 调成更顺手的工作状态
+                  {t("settings.heroTitle")}
                 </h1>
                 <p className="mt-2 supporting-text max-w-[34rem]">
-                  热键、主题、透明度和 AI 接口配置都在这里统一管理。深色模式下重点是更稳的层级、更清楚的焦点反馈，以及更低的视觉噪声。
+                  {t("settings.heroDescription")}
                 </p>
               </div>
               <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[20px] border border-accent/20 bg-[radial-gradient(circle_at_top,rgb(var(--accent)/0.24),transparent_70%),linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.01))] text-accent shadow-[0_20px_40px_-30px_rgb(var(--accent)/0.9)]">
@@ -168,21 +170,25 @@ export function SettingsLayout({
             <div className="subtle-divider my-5" />
             <div className="grid grid-cols-1 gap-3">
               <div className="rounded-[22px] border border-border/50 bg-primary/54 px-4 py-3 shadow-[inset_0_1px_0_rgb(var(--foreground)/0.03)]">
-                <p className="eyebrow-label">Theme</p>
+                <p className="eyebrow-label">{t("settings.summaryTheme")}</p>
                 <p className="mt-2 text-sm font-medium text-foreground">{themeMeta[settings.theme]}</p>
               </div>
               <div className="rounded-[22px] border border-border/50 bg-primary/54 px-4 py-3 shadow-[inset_0_1px_0_rgb(var(--foreground)/0.03)]">
-                <p className="eyebrow-label">Languages</p>
+                <p className="eyebrow-label">{t("settings.summaryLocale")}</p>
+                <p className="mt-2 text-sm font-medium text-foreground">{localeLabel}</p>
+              </div>
+              <div className="rounded-[22px] border border-border/50 bg-primary/54 px-4 py-3 shadow-[inset_0_1px_0_rgb(var(--foreground)/0.03)]">
+                <p className="eyebrow-label">{t("settings.summaryLanguages")}</p>
                 <p className="mt-2 text-sm font-medium text-foreground">{languagePairLabel}</p>
               </div>
               <div className="rounded-[22px] border border-border/50 bg-primary/54 px-4 py-3 shadow-[inset_0_1px_0_rgb(var(--foreground)/0.03)]">
-                <p className="eyebrow-label">Profile</p>
-                <p className="mt-2 text-sm font-medium text-foreground">{outputModeLabel} 输出</p>
+                <p className="eyebrow-label">{t("settings.summaryProfile")}</p>
+                <p className="mt-2 text-sm font-medium text-foreground">{outputModeLabel}</p>
               </div>
               <div className="rounded-[22px] border border-border/50 bg-primary/54 px-4 py-3 shadow-[inset_0_1px_0_rgb(var(--foreground)/0.03)]">
-                <p className="eyebrow-label">Sync</p>
+                <p className="eyebrow-label">{t("settings.summarySync")}</p>
                 <p className="mt-2 text-sm font-medium text-foreground">
-                  {hasChanges ? "有未保存更改" : "已与本地配置同步"}
+                  {hasChanges ? t("common.unsavedChanges") : t("common.synced")}
                 </p>
               </div>
             </div>
@@ -190,36 +196,44 @@ export function SettingsLayout({
 
           <SettingsSectionCard
             icon={Languages}
-            title="语言"
-            description="选择原文语言和输出语言，润色与解释都会按这组语言执行。"
-            badge={languagePairLabel}
+            title={t("settings.languageSectionTitle")}
+            description={t("settings.languageSectionDescription")}
+            badge={localeLabel}
           >
             <div className="flex flex-col gap-3">
               <Select
-                label="原文语言"
-                value={settings.sourceLanguage}
-                onChange={(e) =>
-                  updateSetting("sourceLanguage", e.target.value as AppSettings["sourceLanguage"])
+                label={t("settings.uiLanguage")}
+                value={settings.locale}
+                onChange={(event) =>
+                  updateSetting("locale", event.target.value as AppSettings["locale"])
                 }
-                options={LANGUAGE_OPTIONS.map((option) => ({
+                options={localeOptions}
+              />
+              <Select
+                label={t("settings.sourceLanguage")}
+                value={settings.sourceLanguage}
+                onChange={(event) =>
+                  updateSetting("sourceLanguage", event.target.value as AppSettings["sourceLanguage"])
+                }
+                options={languageOptions.map((option) => ({
                   ...option,
-                  description: `将输入和划词内容默认视为${option.label}。`,
+                  description: t("settings.sourceLanguageDescription", { language: option.label }),
                 }))}
               />
               <Select
-                label="输出语言"
+                label={t("settings.targetLanguage")}
                 value={settings.targetLanguage}
-                onChange={(e) =>
-                  updateSetting("targetLanguage", e.target.value as AppSettings["targetLanguage"])
+                onChange={(event) =>
+                  updateSetting("targetLanguage", event.target.value as AppSettings["targetLanguage"])
                 }
-                options={LANGUAGE_OPTIONS.map((option) => ({
+                options={languageOptions.map((option) => ({
                   ...option,
-                  description: `润色结果和解释释义会输出为${option.label}。`,
+                  description: t("settings.targetLanguageDescription", { language: option.label }),
                 }))}
               />
               <div className="panel-inset px-4 py-3">
                 <p className="text-xs leading-5 text-foreground/58">
-                  主窗口会把原文整理为目标语言；解释窗口会把划词内容翻译并说明为目标语言。
+                  {t("settings.languageSectionHint")}
                 </p>
               </div>
             </div>
@@ -227,22 +241,22 @@ export function SettingsLayout({
 
           <SettingsSectionCard
             icon={Zap}
-            title="输出模式"
-            description="决定润色结果更贴近原文还是更积极优化。"
+            title={t("settings.outputModeTitle")}
+            description={t("settings.outputModeDescription")}
             badge={outputModeLabel}
           >
             <div className="flex flex-col gap-3">
               <Select
-                label="优化风格"
+                label={t("settings.outputMode")}
                 value={settings.outputMode}
-                onChange={(e) =>
-                  updateSetting("outputMode", e.target.value as OutputMode)
+                onChange={(event) =>
+                  updateSetting("outputMode", event.target.value as OutputMode)
                 }
                 options={outputOptions}
               />
               <div className="panel-inset px-4 py-3">
                 <p className="text-xs leading-5 text-foreground/58">
-                  保守模式更接近原文；增强模式会进行更积极的改写，更适合直接提交给 AI 编程助手。
+                  {t("settings.outputModeHint")}
                 </p>
               </div>
             </div>
@@ -250,27 +264,27 @@ export function SettingsLayout({
 
           <SettingsSectionCard
             icon={Palette}
-            title="外观"
-            description="调整主题和透明度，让窗口更融入你的桌面环境。"
+            title={t("settings.appearanceTitle")}
+            description={t("settings.appearanceDescription")}
             badge={themeMeta[settings.theme]}
           >
             <div className="flex flex-col gap-3">
               <Select
-                label="主题"
+                label={t("settings.theme")}
                 value={settings.theme}
-                onChange={(e) =>
-                  updateSetting("theme", e.target.value as Theme)
+                onChange={(event) =>
+                  updateSetting("theme", event.target.value as Theme)
                 }
                 options={themeOptions}
               />
               <Slider
-                label="窗口不透明度"
+                label={t("settings.opacity")}
                 min={0.3}
                 max={1.0}
                 step={0.05}
                 value={settings.opacity}
-                onChange={(e) =>
-                  updateSetting("opacity", parseFloat(e.target.value))
+                onChange={(event) =>
+                  updateSetting("opacity", parseFloat(event.target.value))
                 }
               />
             </div>
@@ -278,29 +292,29 @@ export function SettingsLayout({
 
           <SettingsSectionCard
             icon={Keyboard}
-            title="快捷键"
-            description="为三个窗口设置更顺手的全局热键组合。"
-            badge="3 组热键"
+            title={t("settings.hotkeysTitle")}
+            description={t("settings.hotkeysDescription")}
+            badge={t("settings.hotkeysBadge")}
           >
             <div className="flex flex-col gap-3">
               <HotkeyInput
-                label="主窗口"
+                label={t("settings.hotkey.main")}
                 value={settings.hotkeys.main}
                 onChange={(value) => updateHotkey("main", value)}
               />
               <HotkeyInput
-                label="解释窗口"
+                label={t("settings.hotkey.explain")}
                 value={settings.hotkeys.explain}
                 onChange={(value) => updateHotkey("explain", value)}
               />
               <HotkeyInput
-                label="设置窗口"
+                label={t("settings.hotkey.settings")}
                 value={settings.hotkeys.settings}
                 onChange={(value) => updateHotkey("settings", value)}
               />
               <div className="panel-inset px-4 py-3">
                 <p className="text-xs leading-5 text-foreground/58">
-                  尽量避免与系统保留快捷键或 IDE 常用组合冲突，尤其是 <span className="kbd-chip mx-1">Ctrl+Shift</span> 系列。
+                  {t("settings.hotkeysHint")}
                 </p>
               </div>
             </div>
@@ -308,49 +322,49 @@ export function SettingsLayout({
 
           <SettingsSectionCard
             icon={Bot}
-            title="AI 服务商"
-            description="接入任何兼容 OpenAI 的接口地址、密钥和模型。"
+            title={t("settings.aiTitle")}
+            description={t("settings.aiDescription")}
             badge={aiStatusLabel}
           >
             <div className="flex flex-col gap-3">
               <Input
-                label="接口地址"
+                label={t("settings.aiBaseUrl")}
                 type="url"
                 value={settings.aiProvider.baseUrl}
-                onChange={(e) =>
+                onChange={(event) =>
                   updateSetting("aiProvider", {
                     ...settings.aiProvider,
-                    baseUrl: e.target.value,
+                    baseUrl: event.target.value,
                   })
                 }
                 placeholder="https://api.openai.com/v1"
               />
               <Input
-                label="API 密钥"
+                label={t("settings.aiApiKey")}
                 type="password"
                 value={settings.aiProvider.apiKey}
-                onChange={(e) =>
+                onChange={(event) =>
                   updateSetting("aiProvider", {
                     ...settings.aiProvider,
-                    apiKey: e.target.value,
+                    apiKey: event.target.value,
                   })
                 }
                 placeholder="sk-..."
               />
               <Input
-                label="模型"
+                label={t("settings.aiModel")}
                 value={settings.aiProvider.model}
-                onChange={(e) =>
+                onChange={(event) =>
                   updateSetting("aiProvider", {
                     ...settings.aiProvider,
-                    model: e.target.value,
+                    model: event.target.value,
                   })
                 }
                 placeholder="gpt-4o-mini"
               />
               <div className="panel-inset px-4 py-3">
                 <p className="text-xs leading-5 text-foreground/58">
-                  支持任何兼容 OpenAI 的 API。留空 API 密钥时会继续使用本地备用模式，适合先验证界面和流程。
+                  {t("settings.aiHint")}
                 </p>
               </div>
             </div>
@@ -358,23 +372,23 @@ export function SettingsLayout({
 
           <SettingsSectionCard
             icon={SlidersHorizontal}
-            title="偏好设置"
-            description="控制窗口行为，保持 LingoKey 与你的工作区节奏一致。"
+            title={t("settings.preferencesTitle")}
+            description={t("settings.preferencesDescription")}
             badge={preferenceStatus}
           >
             <div className="flex flex-col gap-3">
               <Toggle
-                label="置顶显示"
-                description="让 LingoKey 始终显示在其他窗口之上"
+                label={t("settings.alwaysOnTop")}
+                description={t("settings.alwaysOnTopDescription")}
                 checked={settings.alwaysOnTop}
-                onChange={(e) => updateSetting("alwaysOnTop", e.target.checked)}
+                onChange={(event) => updateSetting("alwaysOnTop", event.target.checked)}
               />
               <div className="subtle-divider" />
               <Toggle
-                label="开机自启"
-                description="系统启动时自动运行 LingoKey"
+                label={t("settings.autoStart")}
+                description={t("settings.autoStartDescription")}
                 checked={settings.autoStart}
-                onChange={(e) => updateSetting("autoStart", e.target.checked)}
+                onChange={(event) => updateSetting("autoStart", event.target.checked)}
               />
             </div>
           </SettingsSectionCard>
@@ -384,12 +398,12 @@ export function SettingsLayout({
               <div className="flex items-center justify-between gap-4">
                 <div className="min-w-0">
                   <p className="text-sm font-medium text-foreground">
-                    {hasChanges ? "有未保存更改" : "设置已同步"}
+                    {hasChanges ? t("common.unsavedChanges") : t("common.synced")}
                   </p>
                   <p className="mt-1 text-xs leading-5 text-foreground/52">
                     {hasChanges
-                      ? "保存后会立即应用到对应窗口。"
-                      : "你当前看到的是已生效的本地配置。"}
+                      ? t("settings.footerUnsavedDescription")
+                      : t("settings.footerSavedDescription")}
                   </p>
                 </div>
                 <div className="flex items-center gap-3">
@@ -400,7 +414,7 @@ export function SettingsLayout({
                     disabled={!hasChanges}
                   >
                     <RotateCcw className="h-4 w-4" />
-                    重置
+                    {t("common.reset")}
                   </Button>
                   <Button
                     onClick={onSave}
@@ -408,7 +422,7 @@ export function SettingsLayout({
                     disabled={!hasChanges}
                   >
                     <Save className="h-4 w-4" />
-                    保存更改
+                    {t("common.saveChanges")}
                   </Button>
                 </div>
               </div>

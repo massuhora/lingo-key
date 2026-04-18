@@ -11,11 +11,37 @@ mod input;
 use commands::settings::AppSettings;
 use commands::window::show_explain_with_text;
 
+pub struct TrayMenuItems {
+    pub show: MenuItem<tauri::Wry>,
+    pub settings: MenuItem<tauri::Wry>,
+    pub quit: MenuItem<tauri::Wry>,
+}
+
 pub struct AppState {
     pub settings: Mutex<AppSettings>,
     pub registered_main_hotkey: Mutex<Option<String>>,
     pub registered_explain_hotkey: Mutex<Option<String>>,
     pub registered_settings_hotkey: Mutex<Option<String>>,
+    pub tray_menu_items: Mutex<Option<TrayMenuItems>>,
+}
+
+fn tray_labels(locale: &str) -> (&'static str, &'static str, &'static str) {
+    if commands::settings::is_chinese_locale(locale) {
+        ("显示主窗口", "设置", "退出")
+    } else {
+        ("Show Main Window", "Settings", "Quit")
+    }
+}
+
+pub fn apply_tray_locale(state: &AppState, locale: &str) {
+    if let Ok(tray_menu_items) = state.tray_menu_items.lock() {
+        if let Some(items) = tray_menu_items.as_ref() {
+            let (show, settings, quit) = tray_labels(locale);
+            let _ = items.show.set_text(show);
+            let _ = items.settings.set_text(settings);
+            let _ = items.quit.set_text(quit);
+        }
+    }
 }
 
 fn setup_prevent_close(window: &tauri::WebviewWindow) {
@@ -151,6 +177,7 @@ pub fn run() {
             registered_main_hotkey: Mutex::new(None),
             registered_explain_hotkey: Mutex::new(None),
             registered_settings_hotkey: Mutex::new(None),
+            tray_menu_items: Mutex::new(None),
         })
         .invoke_handler(tauri::generate_handler![
             commands::window::show_main_window,
@@ -223,9 +250,10 @@ pub fn run() {
             }
 
             // Setup system tray.
-            let show_i = MenuItem::with_id(app, "show", "显示主窗口", true, None::<&str>)?;
-            let settings_i = MenuItem::with_id(app, "settings", "设置", true, None::<&str>)?;
-            let quit_i = MenuItem::with_id(app, "quit", "退出", true, None::<&str>)?;
+            let (show_label, settings_label, quit_label) = tray_labels(&settings.locale);
+            let show_i = MenuItem::with_id(app, "show", show_label, true, None::<&str>)?;
+            let settings_i = MenuItem::with_id(app, "settings", settings_label, true, None::<&str>)?;
+            let quit_i = MenuItem::with_id(app, "quit", quit_label, true, None::<&str>)?;
             let menu = Menu::with_items(app, &[&show_i, &settings_i, &quit_i])?;
 
             let tray_icon = app
@@ -266,6 +294,12 @@ pub fn run() {
                     }
                 })
                 .build(app)?;
+
+            *state.tray_menu_items.lock().unwrap() = Some(TrayMenuItems {
+                show: show_i,
+                settings: settings_i,
+                quit: quit_i,
+            });
 
             Ok(())
         })

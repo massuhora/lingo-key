@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, type KeyboardEvent } from "react";
+import { useI18n } from "../../lib/i18n";
 import { cn } from "../../lib/utils";
 
 interface HotkeyInputProps {
@@ -34,12 +35,14 @@ export function HotkeyInput({
   value,
   onChange,
   label,
-  placeholder = "点击并按下快捷键...",
+  placeholder,
   className,
 }: HotkeyInputProps) {
+  const { t } = useI18n();
   const [isRecording, setIsRecording] = useState(false);
   const [displayValue, setDisplayValue] = useState(value);
   const inputRef = useRef<HTMLInputElement>(null);
+  const resolvedPlaceholder = placeholder ?? t("hotkeyInput.placeholder");
 
   useEffect(() => {
     setDisplayValue(value);
@@ -105,7 +108,7 @@ export function HotkeyInput({
               : "border-border/55 bg-primary/65 text-foreground/45",
           )}
         >
-          {isRecording ? "LISTEN" : "IDLE"}
+          {isRecording ? t("hotkeyInput.recording") : t("hotkeyInput.idle")}
         </span>
       </div>
       <input
@@ -113,7 +116,7 @@ export function HotkeyInput({
         type="text"
         readOnly
         value={displayValue}
-        placeholder={placeholder}
+        placeholder={resolvedPlaceholder}
         onFocus={() => setIsRecording(true)}
         onKeyDown={handleKeyDown}
         onKeyUp={handleKeyUp}
@@ -126,7 +129,7 @@ export function HotkeyInput({
         )}
       />
       <span className="text-xs leading-5 text-foreground/50">
-        {isRecording ? "按下你想设置的快捷键组合，然后松开最后一个按键。" : "点击后直接录制新的全局快捷键。"}
+        {isRecording ? t("hotkeyInput.recordingHint") : t("hotkeyInput.idleHint")}
       </span>
     </div>
   );

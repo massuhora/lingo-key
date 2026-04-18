@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react";
 import { Copy, Check } from "lucide-react";
+import { useI18n } from "../../lib/i18n";
 import { cn } from "../../lib/utils";
 import { Button } from "./Button";
 
@@ -14,6 +15,7 @@ export function CopyButton({
   className,
   variant = "ghost",
 }: CopyButtonProps) {
+  const { t } = useI18n();
   const [copied, setCopied] = useState(false);
 
   const handleCopy = useCallback(async () => {
@@ -21,7 +23,6 @@ export function CopyButton({
       const { writeText } = await import("@tauri-apps/plugin-clipboard-manager");
       await writeText(text);
     } catch {
-      // Fallback to browser clipboard API
       await navigator.clipboard.writeText(text);
     }
 
@@ -39,7 +40,7 @@ export function CopyButton({
         copied && "border-accent/40 bg-accent/12 text-accent",
         className,
       )}
-      aria-label={copied ? "已复制" : "复制到剪贴板"}
+      aria-label={copied ? t("copyButton.copied") : t("copyButton.copy")}
     >
       <Copy
         className={cn(

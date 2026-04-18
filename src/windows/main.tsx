@@ -6,7 +6,7 @@ import { useClipboard } from '../hooks/useClipboard';
 import { useWindow } from '../hooks/useWindow';
 import { useAppearance } from '../hooks/useAppearance';
 import { hideCurrentWindow, showWindow } from '../lib/tauri';
-import { LANGUAGE_LABELS } from '../lib/settings';
+import { getLanguageLabel, I18nProvider } from '../lib/i18n';
 
 export default function MainWindow() {
   const { settings, loading: settingsLoading } = useSettings();
@@ -20,8 +20,8 @@ export default function MainWindow() {
   const { write } = useClipboard();
   const isDraggingRef = useRef(false);
   const inputRef = useRef<HTMLTextAreaElement>(null);
-  const targetLanguageLabel = LANGUAGE_LABELS[settings.targetLanguage];
-  const languagePairLabel = `${LANGUAGE_LABELS[settings.sourceLanguage]} -> ${targetLanguageLabel}`;
+  const targetLanguageLabel = getLanguageLabel(settings.locale, settings.targetLanguage);
+  const languagePairLabel = `${getLanguageLabel(settings.locale, settings.sourceLanguage)} -> ${targetLanguageLabel}`;
 
   useWindow({
     type: 'main',
@@ -83,19 +83,21 @@ export default function MainWindow() {
   useAppearance(settings);
 
   return (
-    <MainLayout
-      inputRef={inputRef}
-      inputValue={input}
-      onInputChange={setInput}
-      originalText={input}
-      resultText={result}
-      languagePairLabel={languagePairLabel}
-      targetLanguageLabel={targetLanguageLabel}
-      isLoading={loading || settingsLoading}
-      error={error}
-      onSettingsClick={handleSettingsClick}
-      onSubmit={retry}
-      onDragStateChange={handleDragStateChange}
-    />
+    <I18nProvider locale={settings.locale}>
+      <MainLayout
+        inputRef={inputRef}
+        inputValue={input}
+        onInputChange={setInput}
+        originalText={input}
+        resultText={result}
+        languagePairLabel={languagePairLabel}
+        targetLanguageLabel={targetLanguageLabel}
+        isLoading={loading || settingsLoading}
+        error={error}
+        onSettingsClick={handleSettingsClick}
+        onSubmit={retry}
+        onDragStateChange={handleDragStateChange}
+      />
+    </I18nProvider>
   );
 }

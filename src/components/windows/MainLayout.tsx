@@ -1,5 +1,6 @@
 import { type RefObject } from "react";
 import { Settings, Sparkles, ArrowRight, Command } from "lucide-react";
+import { useI18n } from "../../lib/i18n";
 import { cn } from "../../lib/utils";
 import {
   Button,
@@ -43,13 +44,10 @@ export function MainLayout({
   onDragStateChange,
   className,
 }: MainLayoutProps) {
+  const { t } = useI18n();
+
   return (
-    <div
-      className={cn(
-        "window-shell",
-        className,
-      )}
-    >
+    <div className={cn("window-shell", className)}>
       <WindowResizeHandles />
 
       <TitleBar
@@ -58,9 +56,9 @@ export function MainLayout({
         onDragStateChange={onDragStateChange}
       >
         <div className="ml-auto flex items-center gap-1">
-          <span className="status-chip">Prompt Polish</span>
+          <span className="status-chip">{t("main.status")}</span>
           <span className="status-chip">{languagePairLabel}</span>
-          <Tooltip content="设置">
+          <Tooltip content={t("common.settings")}>
             <Button
               variant="ghost"
               size="icon"
@@ -79,9 +77,9 @@ export function MainLayout({
             <section className="panel-surface flex flex-col gap-3 p-4">
               <div className="flex items-center justify-between gap-3">
                 <div>
-                  <h2 className="text-sm font-semibold text-foreground">输入</h2>
+                  <h2 className="text-sm font-semibold text-foreground">{t("main.inputTitle")}</h2>
                   <p className="mt-1 text-xs text-foreground/52">
-                    输入原文，LingoKey 会按当前语言设置整理成 {targetLanguageLabel}。
+                    {t("main.inputDescription", { language: targetLanguageLabel })}
                   </p>
                 </div>
                 <span className="font-mono text-[11px] text-foreground/38">
@@ -91,20 +89,20 @@ export function MainLayout({
               <Textarea
                 ref={inputRef}
                 value={inputValue}
-                onChange={(e) => onInputChange(e.target.value)}
-                placeholder={`输入需要整理成${targetLanguageLabel}的内容...`}
+                onChange={(event) => onInputChange(event.target.value)}
+                placeholder={t("main.inputPlaceholder", { language: targetLanguageLabel })}
                 className="min-h-[104px] bg-primary/74"
                 autoResize
                 minRows={2}
                 maxRows={4}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) {
                     onSubmit?.();
                   }
                 }}
               />
               <div className="flex items-center justify-between gap-3 text-xs text-foreground/46">
-                <span>适合需求描述、问题重述、让 AI 更容易理解的上下文。</span>
+                <span>{t("main.inputHint")}</span>
                 <span className="kbd-chip">Ctrl + Enter</span>
               </div>
             </section>
@@ -112,9 +110,9 @@ export function MainLayout({
             <section className="panel-surface flex min-h-[196px] flex-col gap-3 p-4">
               <div className="flex items-center justify-between gap-3">
                 <div>
-                  <h2 className="text-sm font-semibold text-foreground">润色结果</h2>
+                  <h2 className="text-sm font-semibold text-foreground">{t("main.resultTitle")}</h2>
                   <p className="mt-1 text-xs text-foreground/52">
-                    差异会被高亮，方便快速确认修改点。
+                    {t("main.resultDescription")}
                   </p>
                 </div>
                 {resultText && (
@@ -130,7 +128,7 @@ export function MainLayout({
                 {isLoading ? (
                   <div className="flex h-full items-center justify-center gap-3 text-foreground/56">
                     <Spinner size="sm" className="text-accent" />
-                    <span className="text-sm">正在整理表达...</span>
+                    <span className="text-sm">{t("main.loading")}</span>
                   </div>
                 ) : resultText ? (
                   <>
@@ -139,10 +137,7 @@ export function MainLayout({
                         {error}
                       </div>
                     )}
-                    <DiffHighlight
-                      original={originalText}
-                      optimized={resultText}
-                    />
+                    <DiffHighlight original={originalText} optimized={resultText} />
                   </>
                 ) : (
                   <div className="flex h-full flex-col items-center justify-center gap-3 text-center text-foreground/36">
@@ -150,9 +145,9 @@ export function MainLayout({
                       <Sparkles className="h-5 w-5" />
                     </div>
                     <div className="space-y-1">
-                      <p className="text-sm font-medium text-foreground/54">结果会显示在这里</p>
+                      <p className="text-sm font-medium text-foreground/54">{t("main.emptyTitle")}</p>
                       <p className="text-xs leading-5 text-foreground/38">
-                        发送前先快速检查语气、术语和细节表达。
+                        {t("main.emptyDescription")}
                       </p>
                     </div>
                   </div>
@@ -166,9 +161,9 @@ export function MainLayout({
           <div className="flex flex-wrap items-center gap-2 text-xs text-foreground/52">
             <span className="status-chip">
               <Command className="h-3.5 w-3.5" />
-              快捷提交
+              {t("main.quickSubmit")}
             </span>
-            <span>支持直接复制结果，继续发给 Codex、Claude Code 或 Cursor。</span>
+            <span>{t("main.quickSubmitDescription")}</span>
           </div>
           <Button
             onClick={onSubmit}
@@ -178,11 +173,11 @@ export function MainLayout({
             {isLoading ? (
               <>
                 <Spinner size="sm" />
-                正在润色
+                {t("main.submitting")}
               </>
             ) : (
               <>
-                开始润色
+                {t("main.submit")}
                 <ArrowRight className="h-4 w-4" />
               </>
             )}

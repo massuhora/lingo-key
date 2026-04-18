@@ -15,6 +15,10 @@ fn default_output_mode() -> String {
     "enhanced".to_string()
 }
 
+fn default_locale() -> String {
+    "zh-CN".to_string()
+}
+
 fn default_source_language() -> String {
     "chinese".to_string()
 }
@@ -54,6 +58,14 @@ fn is_supported_language(language: &str) -> bool {
     )
 }
 
+fn is_supported_locale(locale: &str) -> bool {
+    matches!(locale, "zh-CN" | "en-US")
+}
+
+pub fn is_chinese_locale(locale: &str) -> bool {
+    locale == "zh-CN"
+}
+
 #[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct AiProvider {
@@ -84,6 +96,8 @@ pub struct AppSettings {
     pub explain_hotkey: String,
     #[serde(default = "default_settings_hotkey")]
     pub settings_hotkey: String,
+    #[serde(default = "default_locale")]
+    pub locale: String,
     #[serde(default = "default_source_language")]
     pub source_language: String,
     #[serde(default = "default_target_language")]
@@ -108,6 +122,7 @@ impl Default for AppSettings {
             main_hotkey: default_main_hotkey(),
             explain_hotkey: default_explain_hotkey(),
             settings_hotkey: default_settings_hotkey(),
+            locale: default_locale(),
             source_language: default_source_language(),
             target_language: default_target_language(),
             output_mode: default_output_mode(),
@@ -131,6 +146,9 @@ impl AppSettings {
         }
         if self.settings_hotkey.trim().is_empty() {
             self.settings_hotkey = default_settings_hotkey();
+        }
+        if !is_supported_locale(self.locale.trim()) {
+            self.locale = default_locale();
         }
         if !is_supported_language(self.source_language.trim()) {
             self.source_language = default_source_language();
@@ -201,6 +219,8 @@ pub async fn set_settings(
         let mut locked = state.settings.lock().map_err(|e| e.to_string())?;
         *locked = settings.clone();
     }
+
+    crate::apply_tray_locale(&state, &settings.locale);
 
     if let Err(e) = crate::register_hotkeys(&app, &settings, &state) {
         eprintln!("Failed to re-register hotkeys: {}", e);
