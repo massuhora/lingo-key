@@ -21,7 +21,12 @@ export interface UseOptimizeReturn {
   retry: () => void;
 }
 
-export function useOptimize(input: string, mode: OutputMode): UseOptimizeReturn {
+export function useOptimize(
+  input: string,
+  mode: OutputMode,
+  sourceLanguage: string,
+  targetLanguage: string,
+): UseOptimizeReturn {
   const [result, setResult] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -77,7 +82,7 @@ export function useOptimize(input: string, mode: OutputMode): UseOptimizeReturn 
         clearTimeout(timeoutRef.current);
       }
     };
-  }, [input, mode, retryToken, performOptimize]);
+  }, [input, mode, sourceLanguage, targetLanguage, retryToken, performOptimize]);
 
   const retry = useCallback(() => {
     setRetryToken((t) => t + 1);

@@ -8,6 +8,7 @@ import { useClipboard } from '../hooks/useClipboard';
 import { useWindow } from '../hooks/useWindow';
 import { useAppearance } from '../hooks/useAppearance';
 import { listenClipboardText, readClipboard } from '../lib/tauri';
+import { LANGUAGE_LABELS } from '../lib/settings';
 import type { ExplainResult } from '../types';
 
 const EMPTY_RESULT: ExplainResult = {
@@ -17,10 +18,15 @@ const EMPTY_RESULT: ExplainResult = {
 };
 
 function ExplainWindow() {
-  const { result, loading, error, run } = useExplain();
   const { settings } = useSettings();
+  const { result, loading, error, run } = useExplain(
+    settings.sourceLanguage,
+    settings.targetLanguage,
+  );
   const { text: clipboardText, read } = useClipboard();
   const [originalText, setOriginalText] = useState('');
+  const targetLanguageLabel = LANGUAGE_LABELS[settings.targetLanguage];
+  const languagePairLabel = `${LANGUAGE_LABELS[settings.sourceLanguage]} -> ${targetLanguageLabel}`;
 
   useWindow({
     type: 'explain',
@@ -93,7 +99,11 @@ function ExplainWindow() {
   };
 
   return (
-    <ExplainLayout result={displayResult} />
+    <ExplainLayout
+      result={displayResult}
+      languagePairLabel={languagePairLabel}
+      targetLanguageLabel={targetLanguageLabel}
+    />
   );
 }
 

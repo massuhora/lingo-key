@@ -44,20 +44,42 @@ struct ChoiceMessage {
     content: String,
 }
 
-fn build_optimize_prompt(text: &str, mode: &str) -> Vec<ChatMessage> {
+fn language_name(language: &str) -> &str {
+    match language {
+        "chinese" => "Chinese",
+        "english" => "English",
+        "japanese" => "Japanese",
+        "korean" => "Korean",
+        "spanish" => "Spanish",
+        "french" => "French",
+        "german" => "German",
+        _ => "English",
+    }
+}
+
+fn build_optimize_prompt(
+    text: &str,
+    mode: &str,
+    source_language: &str,
+    target_language: &str,
+) -> Vec<ChatMessage> {
     let mode_instruction = if mode == "conservative" {
         "Keep changes minimal. Fix grammar, spelling, and unnatural phrasing. Do NOT add technical requirements beyond what the user explicitly stated."
     } else {
         "Make the expression more natural and polished, but still do NOT add technical requirements beyond what the user explicitly stated."
     };
+    let source_language = language_name(source_language);
+    let target_language = language_name(target_language);
 
     let system = format!(
         "You are LingoKey, an AI assistant for developers who work with AI coding tools like Codex, Claude Code, and Cursor.\n\
-        Your task is to rewrite the user's input into natural, accurate English that can be sent directly as a prompt.\n\n\
+        The user's source language is {}.\n\
+        Your task is to rewrite the user's input into natural, accurate {} that can be sent directly as a prompt.\n\
+        If the input mixes languages, preserve the full intent and normalize the final result entirely in {}.\n\n\
         Mode: {}\n\
         {}\n\n\
         Only return the rewritten text. Do not add quotes, explanations, or markdown formatting.",
-        mode, mode_instruction
+        source_language, target_language, target_language, mode, mode_instruction
     );
 
     vec![
@@ -66,13 +88,19 @@ fn build_optimize_prompt(text: &str, mode: &str) -> Vec<ChatMessage> {
     ]
 }
 
-fn build_explain_prompt(text: &str) -> Vec<ChatMessage> {
-    let system = "You are LingoKey, an assistant helping developers understand English expressions they encounter while working with AI coding tools.\n\
-        Given a word, phrase, sentence, or short paragraph, provide a helpful explanation.\n\n\
+fn build_explain_prompt(text: &str, source_language: &str, target_language: &str) -> Vec<ChatMessage> {
+    let source_language = language_name(source_language);
+    let target_language = language_name(target_language);
+    let system = format!(
+        "You are LingoKey, an assistant helping developers understand expressions they encounter while working with AI coding tools.\n\
+        Treat the user's input as primarily written in {}.\n\
+        Given a word, phrase, sentence, or short paragraph, provide a helpful explanation in {}.\n\n\
         Return your answer as a JSON object with these exact keys:\n\
-        - meaning: Accurate and complete Chinese translation of the entire input. Do not omit any sentences.\n\
-        - context: General context where this expression is used\n\
-        Only return the JSON object. Do not wrap it in markdown code blocks.".to_string();
+        - meaning: Accurate and complete {} translation of the entire input. Do not omit any sentences.\n\
+        - context: A concise explanation in {} of the general context where this expression is used\n\
+        Only return the JSON object. Do not wrap it in markdown code blocks.",
+        source_language, target_language, target_language, target_language
+    );
 
     vec![
         ChatMessage { role: "system".to_string(), content: system },
@@ -138,20 +166,25 @@ async fn call_llm(
         .ok_or_else(|| "Empty response from LLM".to_string())
 }
 
-/// Optimize the given Chinese/mixed text into polished English.
+/// Optimize the given text into the configured target language.
 #[tauri::command]
 pub async fn optimize_text(
     state: tauri::State<'_, AppState>,
     text: String,
     mode: String,
 ) -> Result<String, String> {
-    let provider = {
+    let settings = {
         let settings = state.settings.lock().map_err(|e| e.to_string())?;
-        settings.ai_provider.clone()
+        settings.clone()
     };
 
-    let messages = build_optimize_prompt(&text, &mode);
-    match call_llm(&provider, messages, false).await {
+    let messages = build_optimize_prompt(
+        &text,
+        &mode,
+        &settings.source_language,
+        &settings.target_language,
+    );
+    match call_llm(&settings.ai_provider, messages, false).await {
         Ok(result) => Ok(result),
         Err(e) => {
             // Graceful fallback with a clear hint when API is unavailable.
@@ -169,19 +202,23 @@ pub async fn optimize_text(
     }
 }
 
-/// Explain the given English text.
+/// Explain the given text using the configured language pair.
 #[tauri::command]
 pub async fn explain_text(
     state: tauri::State<'_, AppState>,
     text: String,
 ) -> Result<ExplainResult, String> {
-    let provider = {
+    let settings = {
         let settings = state.settings.lock().map_err(|e| e.to_string())?;
-        settings.ai_provider.clone()
+        settings.clone()
     };
 
-    let messages = build_explain_prompt(&text);
-    match call_llm(&provider, messages, true).await {
+    let messages = build_explain_prompt(
+        &text,
+        &settings.source_language,
+        &settings.target_language,
+    );
+    match call_llm(&settings.ai_provider, messages, true).await {
         Ok(raw) => {
             // Try to parse JSON response.
             let cleaned = raw

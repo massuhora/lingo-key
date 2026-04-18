@@ -5,11 +5,15 @@ import type { ExplainResult } from "../../types";
 
 interface ExplainLayoutProps {
   result: ExplainResult;
+  languagePairLabel: string;
+  targetLanguageLabel: string;
   className?: string;
 }
 
 export function ExplainLayout({
   result,
+  languagePairLabel,
+  targetLanguageLabel,
   className,
 }: ExplainLayoutProps) {
   return (
@@ -30,7 +34,10 @@ export function ExplainLayout({
 
       <div className="flex flex-1 flex-col gap-3 overflow-auto px-4 pb-4 pt-4">
         <div className="flex items-center justify-between gap-3">
-          <span className="status-chip">Instant Explain</span>
+          <div className="flex items-center gap-2">
+            <span className="status-chip">Instant Explain</span>
+            <span className="status-chip">{languagePairLabel}</span>
+          </div>
           <span className="font-mono text-[11px] text-foreground/42">
             选中文本后触发
           </span>
@@ -51,7 +58,7 @@ export function ExplainLayout({
           </div>
           <div className="flex flex-col gap-1">
             <span className="eyebrow-label">
-              Meaning
+              {targetLanguageLabel}释义
             </span>
             <p className="text-sm leading-6 text-foreground/90">{result.meaning}</p>
           </div>

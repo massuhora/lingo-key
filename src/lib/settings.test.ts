@@ -3,6 +3,7 @@ import {
   DEFAULT_SETTINGS,
   isValidHotkey,
   normalizeOutputMode,
+  normalizeLanguage,
   mergeSettings,
   toAppSettings,
   toSettings,
@@ -50,6 +51,17 @@ describe('normalizeOutputMode', () => {
   });
 });
 
+describe('normalizeLanguage', () => {
+  it('accepts supported languages', () => {
+    expect(normalizeLanguage('japanese', 'english')).toBe('japanese');
+  });
+
+  it('falls back for unsupported values', () => {
+    expect(normalizeLanguage('unknown', 'english')).toBe('english');
+    expect(normalizeLanguage(undefined, 'chinese')).toBe('chinese');
+  });
+});
+
 describe('mergeSettings', () => {
   it('returns defaults when called with empty object', () => {
     expect(mergeSettings({})).toEqual(DEFAULT_SETTINGS);
@@ -71,6 +83,12 @@ describe('mergeSettings', () => {
     const merged = mergeSettings({ outputMode: 'conservative' });
     expect(merged.outputMode).toBe('conservative');
   });
+
+  it('fills missing language pair with defaults', () => {
+    const merged = mergeSettings({ sourceLanguage: 'japanese' });
+    expect(merged.sourceLanguage).toBe('japanese');
+    expect(merged.targetLanguage).toBe(DEFAULT_SETTINGS.targetLanguage);
+  });
 });
 
 describe('toAppSettings / toSettings round-trip', () => {
@@ -79,6 +97,8 @@ describe('toAppSettings / toSettings round-trip', () => {
     expect(app.hotkeys.main).toBe(DEFAULT_SETTINGS.mainHotkey);
     expect(app.hotkeys.explain).toBe(DEFAULT_SETTINGS.explainHotkey);
     expect(app.hotkeys.settings).toBe(DEFAULT_SETTINGS.settingsHotkey);
+    expect(app.sourceLanguage).toBe(DEFAULT_SETTINGS.sourceLanguage);
+    expect(app.targetLanguage).toBe(DEFAULT_SETTINGS.targetLanguage);
     expect(app.outputMode).toBe(DEFAULT_SETTINGS.outputMode);
     expect(app.autoStart).toBe(DEFAULT_SETTINGS.autoStart);
     expect(app.alwaysOnTop).toBe(DEFAULT_SETTINGS.alwaysOnTop);
@@ -91,6 +111,8 @@ describe('toAppSettings / toSettings round-trip', () => {
     const custom = {
       ...DEFAULT_SETTINGS,
       mainHotkey: 'Ctrl+Alt+L',
+      sourceLanguage: 'japanese' as const,
+      targetLanguage: 'english' as const,
       outputMode: 'conservative' as const,
       alwaysOnTop: false,
     };

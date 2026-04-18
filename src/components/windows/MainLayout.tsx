@@ -18,6 +18,8 @@ interface MainLayoutProps {
   onInputChange: (value: string) => void;
   originalText: string;
   resultText: string;
+  languagePairLabel: string;
+  targetLanguageLabel: string;
   isLoading?: boolean;
   error?: string | null;
   onSettingsClick?: () => void;
@@ -32,6 +34,8 @@ export function MainLayout({
   onInputChange,
   originalText,
   resultText,
+  languagePairLabel,
+  targetLanguageLabel,
   isLoading = false,
   error,
   onSettingsClick,
@@ -55,6 +59,7 @@ export function MainLayout({
       >
         <div className="ml-auto flex items-center gap-1">
           <span className="status-chip">Prompt Polish</span>
+          <span className="status-chip">{languagePairLabel}</span>
           <Tooltip content="设置">
             <Button
               variant="ghost"
@@ -76,7 +81,7 @@ export function MainLayout({
                 <div>
                   <h2 className="text-sm font-semibold text-foreground">输入</h2>
                   <p className="mt-1 text-xs text-foreground/52">
-                    输入需要润色的中文或中英混合文本。
+                    输入原文，LingoKey 会按当前语言设置整理成 {targetLanguageLabel}。
                   </p>
                 </div>
                 <span className="font-mono text-[11px] text-foreground/38">
@@ -87,7 +92,7 @@ export function MainLayout({
                 ref={inputRef}
                 value={inputValue}
                 onChange={(e) => onInputChange(e.target.value)}
-                placeholder="输入需要润色的中文或混合文本..."
+                placeholder={`输入需要整理成${targetLanguageLabel}的内容...`}
                 className="min-h-[104px] bg-primary/74"
                 autoResize
                 minRows={2}

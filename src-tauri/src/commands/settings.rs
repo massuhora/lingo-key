@@ -15,6 +15,14 @@ fn default_output_mode() -> String {
     "enhanced".to_string()
 }
 
+fn default_source_language() -> String {
+    "chinese".to_string()
+}
+
+fn default_target_language() -> String {
+    "english".to_string()
+}
+
 fn default_settings_hotkey() -> String {
     "CommandOrControl+Shift+S".to_string()
 }
@@ -37,6 +45,13 @@ fn default_base_url() -> String {
 
 fn default_model() -> String {
     "deepseek-chat".to_string()
+}
+
+fn is_supported_language(language: &str) -> bool {
+    matches!(
+        language,
+        "chinese" | "english" | "japanese" | "korean" | "spanish" | "french" | "german"
+    )
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -69,6 +84,10 @@ pub struct AppSettings {
     pub explain_hotkey: String,
     #[serde(default = "default_settings_hotkey")]
     pub settings_hotkey: String,
+    #[serde(default = "default_source_language")]
+    pub source_language: String,
+    #[serde(default = "default_target_language")]
+    pub target_language: String,
     #[serde(default = "default_output_mode")]
     pub output_mode: String,
     #[serde(default)]
@@ -89,6 +108,8 @@ impl Default for AppSettings {
             main_hotkey: default_main_hotkey(),
             explain_hotkey: default_explain_hotkey(),
             settings_hotkey: default_settings_hotkey(),
+            source_language: default_source_language(),
+            target_language: default_target_language(),
             output_mode: default_output_mode(),
             auto_start: false,
             always_on_top: default_always_on_top(),
@@ -110,6 +131,12 @@ impl AppSettings {
         }
         if self.settings_hotkey.trim().is_empty() {
             self.settings_hotkey = default_settings_hotkey();
+        }
+        if !is_supported_language(self.source_language.trim()) {
+            self.source_language = default_source_language();
+        }
+        if !is_supported_language(self.target_language.trim()) {
+            self.target_language = default_target_language();
         }
         if self.output_mode.trim().is_empty() {
             self.output_mode = default_output_mode();

@@ -1,6 +1,7 @@
 import {
   Bot,
   Keyboard,
+  Languages,
   Palette,
   RotateCcw,
   Save,
@@ -11,6 +12,7 @@ import {
 } from "lucide-react";
 import { cn } from "../../lib/utils";
 import type { AppSettings, OutputMode, Theme } from "../../types";
+import { LANGUAGE_LABELS, LANGUAGE_OPTIONS } from "../../lib/settings";
 import {
   Button,
   Card,
@@ -129,6 +131,7 @@ export function SettingsLayout({
   const outputModeLabel =
     outputOptions.find((option) => option.value === settings.outputMode)?.label ??
     "保守";
+  const languagePairLabel = `${LANGUAGE_LABELS[settings.sourceLanguage]} -> ${LANGUAGE_LABELS[settings.targetLanguage]}`;
   const aiStatusLabel = settings.aiProvider.apiKey ? "已配置密钥" : "备用模式";
   const preferenceStatus = settings.alwaysOnTop ? "置顶开启" : "按需显示";
 
@@ -169,6 +172,10 @@ export function SettingsLayout({
                 <p className="mt-2 text-sm font-medium text-foreground">{themeMeta[settings.theme]}</p>
               </div>
               <div className="rounded-[22px] border border-border/50 bg-primary/54 px-4 py-3 shadow-[inset_0_1px_0_rgb(var(--foreground)/0.03)]">
+                <p className="eyebrow-label">Languages</p>
+                <p className="mt-2 text-sm font-medium text-foreground">{languagePairLabel}</p>
+              </div>
+              <div className="rounded-[22px] border border-border/50 bg-primary/54 px-4 py-3 shadow-[inset_0_1px_0_rgb(var(--foreground)/0.03)]">
                 <p className="eyebrow-label">Profile</p>
                 <p className="mt-2 text-sm font-medium text-foreground">{outputModeLabel} 输出</p>
               </div>
@@ -180,6 +187,43 @@ export function SettingsLayout({
               </div>
             </div>
           </section>
+
+          <SettingsSectionCard
+            icon={Languages}
+            title="语言"
+            description="选择原文语言和输出语言，润色与解释都会按这组语言执行。"
+            badge={languagePairLabel}
+          >
+            <div className="flex flex-col gap-3">
+              <Select
+                label="原文语言"
+                value={settings.sourceLanguage}
+                onChange={(e) =>
+                  updateSetting("sourceLanguage", e.target.value as AppSettings["sourceLanguage"])
+                }
+                options={LANGUAGE_OPTIONS.map((option) => ({
+                  ...option,
+                  description: `将输入和划词内容默认视为${option.label}。`,
+                }))}
+              />
+              <Select
+                label="输出语言"
+                value={settings.targetLanguage}
+                onChange={(e) =>
+                  updateSetting("targetLanguage", e.target.value as AppSettings["targetLanguage"])
+                }
+                options={LANGUAGE_OPTIONS.map((option) => ({
+                  ...option,
+                  description: `润色结果和解释释义会输出为${option.label}。`,
+                }))}
+              />
+              <div className="panel-inset px-4 py-3">
+                <p className="text-xs leading-5 text-foreground/58">
+                  主窗口会把原文整理为目标语言；解释窗口会把划词内容翻译并说明为目标语言。
+                </p>
+              </div>
+            </div>
+          </SettingsSectionCard>
 
           <SettingsSectionCard
             icon={Zap}

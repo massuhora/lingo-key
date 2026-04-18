@@ -1,4 +1,24 @@
-import type { Settings, AppSettings, OutputMode, Theme } from '../types';
+import type {
+  Settings,
+  AppSettings,
+  OutputMode,
+  Theme,
+  AppLanguage,
+} from '../types';
+
+export const LANGUAGE_OPTIONS: Array<{ value: AppLanguage; label: string }> = [
+  { value: 'chinese', label: '中文' },
+  { value: 'english', label: '英文' },
+  { value: 'japanese', label: '日文' },
+  { value: 'korean', label: '韩文' },
+  { value: 'spanish', label: '西班牙文' },
+  { value: 'french', label: '法文' },
+  { value: 'german', label: '德文' },
+];
+
+export const LANGUAGE_LABELS: Record<AppLanguage, string> = Object.fromEntries(
+  LANGUAGE_OPTIONS.map((option) => [option.value, option.label]),
+) as Record<AppLanguage, string>;
 
 export const DEFAULT_AI_PROVIDER = {
   baseUrl: 'https://api.deepseek.com',
@@ -10,6 +30,8 @@ export const DEFAULT_SETTINGS: Settings = {
   mainHotkey: 'CommandOrControl+Shift+L',
   explainHotkey: 'CommandOrControl+Shift+E',
   settingsHotkey: 'CommandOrControl+Shift+S',
+  sourceLanguage: 'chinese',
+  targetLanguage: 'english',
   outputMode: 'enhanced',
   autoStart: false,
   alwaysOnTop: true,
@@ -103,6 +125,15 @@ export function normalizeOutputMode(mode: string): OutputMode {
   return mode === 'conservative' ? 'conservative' : 'enhanced';
 }
 
+export function normalizeLanguage(
+  language: string | undefined,
+  fallback: AppLanguage,
+): AppLanguage {
+  return LANGUAGE_OPTIONS.some((option) => option.value === language)
+    ? (language as AppLanguage)
+    : fallback;
+}
+
 export function normalizeTheme(theme: string): Theme {
   return theme === 'light' ? 'light' : 'dark';
 }
@@ -116,6 +147,14 @@ export function mergeSettings(partial: Partial<Settings>): Settings {
   return {
     ...DEFAULT_SETTINGS,
     ...partial,
+    sourceLanguage: normalizeLanguage(
+      partial.sourceLanguage,
+      DEFAULT_SETTINGS.sourceLanguage,
+    ),
+    targetLanguage: normalizeLanguage(
+      partial.targetLanguage,
+      DEFAULT_SETTINGS.targetLanguage,
+    ),
     outputMode: normalizeOutputMode(partial.outputMode ?? DEFAULT_SETTINGS.outputMode),
     theme: normalizeTheme(partial.theme ?? DEFAULT_SETTINGS.theme),
     opacity: normalizeOpacity(partial.opacity ?? DEFAULT_SETTINGS.opacity),
@@ -133,6 +172,8 @@ export function toAppSettings(settings: Settings): AppSettings {
       explain: settings.explainHotkey,
       settings: settings.settingsHotkey ?? DEFAULT_SETTINGS.settingsHotkey!,
     },
+    sourceLanguage: settings.sourceLanguage,
+    targetLanguage: settings.targetLanguage,
     outputMode: settings.outputMode,
     autoStart: settings.autoStart,
     alwaysOnTop: settings.alwaysOnTop,
@@ -147,6 +188,8 @@ export function toSettings(app: AppSettings): Settings {
     mainHotkey: normalizeHotkey(app.hotkeys.main),
     explainHotkey: normalizeHotkey(app.hotkeys.explain),
     settingsHotkey: normalizeHotkey(app.hotkeys.settings),
+    sourceLanguage: app.sourceLanguage,
+    targetLanguage: app.targetLanguage,
     outputMode: app.outputMode,
     autoStart: app.autoStart,
     alwaysOnTop: app.alwaysOnTop,

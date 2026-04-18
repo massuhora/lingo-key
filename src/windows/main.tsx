@@ -6,14 +6,22 @@ import { useClipboard } from '../hooks/useClipboard';
 import { useWindow } from '../hooks/useWindow';
 import { useAppearance } from '../hooks/useAppearance';
 import { hideCurrentWindow, showWindow } from '../lib/tauri';
+import { LANGUAGE_LABELS } from '../lib/settings';
 
 export default function MainWindow() {
   const { settings, loading: settingsLoading } = useSettings();
   const [input, setInput] = useState('');
-  const { result, loading, error, retry } = useOptimize(input, settings.outputMode);
+  const { result, loading, error, retry } = useOptimize(
+    input,
+    settings.outputMode,
+    settings.sourceLanguage,
+    settings.targetLanguage,
+  );
   const { write } = useClipboard();
   const isDraggingRef = useRef(false);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const targetLanguageLabel = LANGUAGE_LABELS[settings.targetLanguage];
+  const languagePairLabel = `${LANGUAGE_LABELS[settings.sourceLanguage]} -> ${targetLanguageLabel}`;
 
   useWindow({
     type: 'main',
@@ -81,6 +89,8 @@ export default function MainWindow() {
       onInputChange={setInput}
       originalText={input}
       resultText={result}
+      languagePairLabel={languagePairLabel}
+      targetLanguageLabel={targetLanguageLabel}
       isLoading={loading || settingsLoading}
       error={error}
       onSettingsClick={handleSettingsClick}

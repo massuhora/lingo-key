@@ -1,5 +1,13 @@
 export type OutputMode = 'conservative' | 'enhanced';
 export type Theme = 'dark' | 'light';
+export type AppLanguage =
+  | 'chinese'
+  | 'english'
+  | 'japanese'
+  | 'korean'
+  | 'spanish'
+  | 'french'
+  | 'german';
 
 export interface AiProvider {
   baseUrl: string;
@@ -11,6 +19,8 @@ export interface Settings {
   mainHotkey: string;
   explainHotkey: string;
   settingsHotkey?: string;
+  sourceLanguage: AppLanguage;
+  targetLanguage: AppLanguage;
   outputMode: OutputMode;
   autoStart: boolean;
   alwaysOnTop: boolean;
@@ -27,6 +37,8 @@ export interface Hotkeys {
 
 export interface AppSettings {
   hotkeys: Hotkeys;
+  sourceLanguage: AppLanguage;
+  targetLanguage: AppLanguage;
   outputMode: OutputMode;
   autoStart: boolean;
   alwaysOnTop: boolean;
