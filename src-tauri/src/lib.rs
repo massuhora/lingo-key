@@ -223,8 +223,9 @@ pub fn run() {
 
             // Setup system tray.
             let show_i = MenuItem::with_id(app, "show", "显示主窗口", true, None::<&str>)?;
+            let settings_i = MenuItem::with_id(app, "settings", "设置", true, None::<&str>)?;
             let quit_i = MenuItem::with_id(app, "quit", "退出", true, None::<&str>)?;
-            let menu = Menu::with_items(app, &[&show_i, &quit_i])?;
+            let menu = Menu::with_items(app, &[&show_i, &settings_i, &quit_i])?;
 
             TrayIconBuilder::new()
                 .icon(tauri::include_image!("icons/icon.ico"))
@@ -233,14 +234,12 @@ pub fn run() {
                 .on_menu_event(|app: &tauri::AppHandle, event| {
                     match event.id.as_ref() {
                         "show" => {
-                            if let Some(window) = app.get_webview_window("main") {
-                                let state = app.state::<AppState>();
-                                let _ = window.unminimize();
-                                let _ = window.center();
-                                let _ = window.show();
-                                let _ = commands::window::apply_managed_window_preferences(&window, &state);
-                                let _ = window.set_focus();
-                            }
+                            let state = app.state::<AppState>();
+                            let _ = commands::window::show_main_window(app.clone(), state);
+                        }
+                        "settings" => {
+                            let state = app.state::<AppState>();
+                            let _ = commands::window::show_settings_window(app.clone(), state);
                         }
                         "quit" => {
                             app.exit(0);
@@ -256,14 +255,8 @@ pub fn run() {
                     } = event
                     {
                         let app = tray.app_handle();
-                        if let Some(window) = app.get_webview_window("main") {
-                            let state = app.state::<AppState>();
-                            let _ = window.unminimize();
-                            let _ = window.center();
-                            let _ = window.show();
-                            let _ = commands::window::apply_managed_window_preferences(&window, &state);
-                            let _ = window.set_focus();
-                        }
+                        let state = app.state::<AppState>();
+                        let _ = commands::window::show_main_window(app.clone(), state);
                     }
                 })
                 .build(app)?;
