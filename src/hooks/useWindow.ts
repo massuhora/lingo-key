@@ -31,14 +31,30 @@ export function useWindow(options: UseWindowOptions): void {
 
   useEffect(() => {
     let suppressBlur = false;
+    let suppressBlurTimeout: number | undefined;
+
+    const scheduleSuppressBlurReset = (timeoutMs: number) => {
+      suppressBlur = true;
+
+      if (suppressBlurTimeout) {
+        window.clearTimeout(suppressBlurTimeout);
+      }
+
+      suppressBlurTimeout = window.setTimeout(() => {
+        suppressBlur = false;
+        suppressBlurTimeout = undefined;
+      }, timeoutMs);
+    };
 
     const handleMouseDown = (e: MouseEvent) => {
       const target = e.target as HTMLElement | null;
+      if (target?.closest('[data-window-resize-handle]')) {
+        scheduleSuppressBlurReset(400);
+        return;
+      }
+
       if (target?.closest('[data-tauri-drag-region]')) {
-        suppressBlur = true;
-        window.setTimeout(() => {
-          suppressBlur = false;
-        }, 100);
+        scheduleSuppressBlurReset(100);
       }
     };
 
@@ -49,12 +65,15 @@ export function useWindow(options: UseWindowOptions): void {
 
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('blur', guardedBlur);
-    window.addEventListener('mousedown', handleMouseDown);
+    window.addEventListener('mousedown', handleMouseDown, true);
 
     return () => {
+      if (suppressBlurTimeout) {
+        window.clearTimeout(suppressBlurTimeout);
+      }
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('blur', guardedBlur);
-      window.removeEventListener('mousedown', handleMouseDown);
+      window.removeEventListener('mousedown', handleMouseDown, true);
     };
   }, [handleKeyDown, handleBlur]);
 }

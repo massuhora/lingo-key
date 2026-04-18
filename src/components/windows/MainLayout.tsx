@@ -9,6 +9,7 @@ import {
   TitleBar,
   Tooltip,
   Spinner,
+  WindowResizeHandles,
 } from "../ui";
 
 interface MainLayoutProps {
@@ -45,6 +46,8 @@ export function MainLayout({
         className,
       )}
     >
+      <WindowResizeHandles />
+
       <TitleBar
         title="LingoKey"
         dragBehavior="manual"
