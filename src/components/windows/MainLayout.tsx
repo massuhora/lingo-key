@@ -64,7 +64,7 @@ export function MainLayout({
         </div>
       </TitleBar>
 
-      <div className="flex flex-1 flex-col gap-3 px-4 pb-4">
+      <div className="flex min-h-0 flex-1 flex-col gap-3 px-4 pb-4">
         {/* Input Area */}
         <div className="flex flex-col gap-2">
           <div className="flex items-center justify-between">
@@ -93,7 +93,7 @@ export function MainLayout({
         </div>
 
         {/* Result Area */}
-        <div className="flex flex-1 flex-col gap-2 overflow-hidden">
+        <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-hidden">
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium text-foreground/50">
               润色结果
@@ -107,7 +107,7 @@ export function MainLayout({
             )}
           </div>
 
-          <div className="relative flex-1 overflow-auto rounded-lg border border-border bg-muted/30 p-3">
+          <div className="relative min-h-0 flex-1 overflow-y-auto rounded-lg border border-border bg-muted/30 p-3">
             {isLoading ? (
               <div className="flex h-full items-center justify-center gap-2 text-foreground/50">
                 <Spinner size="sm" />
