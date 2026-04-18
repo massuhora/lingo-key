@@ -97,10 +97,19 @@ describe('mergeSettings', () => {
   });
 
   it('fills missing language pair with defaults', () => {
-    const merged = mergeSettings({ sourceLanguage: 'japanese' });
+    const merged = mergeSettings({ nativeLanguage: 'japanese' });
     expect(merged.locale).toBe(DEFAULT_SETTINGS.locale);
-    expect(merged.sourceLanguage).toBe('japanese');
-    expect(merged.targetLanguage).toBe(DEFAULT_SETTINGS.targetLanguage);
+    expect(merged.nativeLanguage).toBe('japanese');
+    expect(merged.learningLanguage).toBe(DEFAULT_SETTINGS.learningLanguage);
+  });
+
+  it('maps legacy source and target language fields', () => {
+    const merged = mergeSettings({
+      sourceLanguage: 'korean',
+      targetLanguage: 'english',
+    } as any);
+    expect(merged.nativeLanguage).toBe('korean');
+    expect(merged.learningLanguage).toBe('english');
   });
 });
 
@@ -111,8 +120,8 @@ describe('toAppSettings / toSettings round-trip', () => {
     expect(app.hotkeys.explain).toBe(DEFAULT_SETTINGS.explainHotkey);
     expect(app.hotkeys.settings).toBe(DEFAULT_SETTINGS.settingsHotkey);
     expect(app.locale).toBe(DEFAULT_SETTINGS.locale);
-    expect(app.sourceLanguage).toBe(DEFAULT_SETTINGS.sourceLanguage);
-    expect(app.targetLanguage).toBe(DEFAULT_SETTINGS.targetLanguage);
+    expect(app.nativeLanguage).toBe(DEFAULT_SETTINGS.nativeLanguage);
+    expect(app.learningLanguage).toBe(DEFAULT_SETTINGS.learningLanguage);
     expect(app.outputMode).toBe(DEFAULT_SETTINGS.outputMode);
     expect(app.autoStart).toBe(DEFAULT_SETTINGS.autoStart);
     expect(app.alwaysOnTop).toBe(DEFAULT_SETTINGS.alwaysOnTop);
@@ -126,8 +135,8 @@ describe('toAppSettings / toSettings round-trip', () => {
       ...DEFAULT_SETTINGS,
       mainHotkey: 'Ctrl+Alt+L',
       locale: 'en-US' as const,
-      sourceLanguage: 'japanese' as const,
-      targetLanguage: 'english' as const,
+      nativeLanguage: 'japanese' as const,
+      learningLanguage: 'english' as const,
       outputMode: 'conservative' as const,
       alwaysOnTop: false,
     };

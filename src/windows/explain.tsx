@@ -14,14 +14,14 @@ import type { ExplainResult } from '../types';
 function ExplainWindow() {
   const { settings } = useSettings();
   const { result, loading, error, run } = useExplain(
-    settings.sourceLanguage,
-    settings.targetLanguage,
+    settings.nativeLanguage,
+    settings.learningLanguage,
     settings.locale,
   );
   const { text: clipboardText, read } = useClipboard();
   const [originalText, setOriginalText] = useState('');
-  const targetLanguageLabel = getLanguageLabel(settings.locale, settings.targetLanguage);
-  const languagePairLabel = `${getLanguageLabel(settings.locale, settings.sourceLanguage)} -> ${targetLanguageLabel}`;
+  const learningLanguageLabel = getLanguageLabel(settings.locale, settings.learningLanguage);
+  const nativeLanguageLabel = getLanguageLabel(settings.locale, settings.nativeLanguage);
 
   useWindow({
     type: 'explain',
@@ -97,8 +97,8 @@ function ExplainWindow() {
     <I18nProvider locale={settings.locale}>
       <ExplainLayout
         result={displayResult}
-        languagePairLabel={languagePairLabel}
-        targetLanguageLabel={targetLanguageLabel}
+        learningLanguageLabel={learningLanguageLabel}
+        nativeLanguageLabel={nativeLanguageLabel}
       />
     </I18nProvider>
   );

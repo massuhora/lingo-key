@@ -30,14 +30,19 @@ export const DEFAULT_SETTINGS: Settings = {
   explainHotkey: 'CommandOrControl+Shift+E',
   settingsHotkey: 'CommandOrControl+Shift+S',
   locale: 'zh-CN',
-  sourceLanguage: 'chinese',
-  targetLanguage: 'english',
+  nativeLanguage: 'chinese',
+  learningLanguage: 'english',
   outputMode: 'enhanced',
   autoStart: false,
   alwaysOnTop: true,
   theme: 'dark',
   opacity: 1.0,
   aiProvider: DEFAULT_AI_PROVIDER,
+};
+
+type LegacySettingsFields = {
+  sourceLanguage?: AppLanguage;
+  targetLanguage?: AppLanguage;
 };
 
 // Normalize common hotkey aliases so the UI and Rust agree on the format.
@@ -146,17 +151,21 @@ export function normalizeOpacity(opacity: number): number {
 }
 
 export function mergeSettings(partial: Partial<Settings>): Settings {
+  const legacy = partial as Partial<Settings> & LegacySettingsFields;
+  const nativeLanguage = partial.nativeLanguage ?? legacy.sourceLanguage;
+  const learningLanguage = partial.learningLanguage ?? legacy.targetLanguage;
+
   return {
     ...DEFAULT_SETTINGS,
     ...partial,
     locale: normalizeLocale(partial.locale),
-    sourceLanguage: normalizeLanguage(
-      partial.sourceLanguage,
-      DEFAULT_SETTINGS.sourceLanguage,
+    nativeLanguage: normalizeLanguage(
+      nativeLanguage,
+      DEFAULT_SETTINGS.nativeLanguage,
     ),
-    targetLanguage: normalizeLanguage(
-      partial.targetLanguage,
-      DEFAULT_SETTINGS.targetLanguage,
+    learningLanguage: normalizeLanguage(
+      learningLanguage,
+      DEFAULT_SETTINGS.learningLanguage,
     ),
     outputMode: normalizeOutputMode(partial.outputMode ?? DEFAULT_SETTINGS.outputMode),
     theme: normalizeTheme(partial.theme ?? DEFAULT_SETTINGS.theme),
@@ -176,8 +185,8 @@ export function toAppSettings(settings: Settings): AppSettings {
       settings: settings.settingsHotkey ?? DEFAULT_SETTINGS.settingsHotkey!,
     },
     locale: settings.locale,
-    sourceLanguage: settings.sourceLanguage,
-    targetLanguage: settings.targetLanguage,
+    nativeLanguage: settings.nativeLanguage,
+    learningLanguage: settings.learningLanguage,
     outputMode: settings.outputMode,
     autoStart: settings.autoStart,
     alwaysOnTop: settings.alwaysOnTop,
@@ -193,8 +202,8 @@ export function toSettings(app: AppSettings): Settings {
     explainHotkey: normalizeHotkey(app.hotkeys.explain),
     settingsHotkey: normalizeHotkey(app.hotkeys.settings),
     locale: app.locale,
-    sourceLanguage: app.sourceLanguage,
-    targetLanguage: app.targetLanguage,
+    nativeLanguage: app.nativeLanguage,
+    learningLanguage: app.learningLanguage,
     outputMode: app.outputMode,
     autoStart: app.autoStart,
     alwaysOnTop: app.alwaysOnTop,

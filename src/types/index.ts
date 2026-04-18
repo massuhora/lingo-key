@@ -21,8 +21,8 @@ export interface Settings {
   explainHotkey: string;
   settingsHotkey?: string;
   locale: Locale;
-  sourceLanguage: AppLanguage;
-  targetLanguage: AppLanguage;
+  nativeLanguage: AppLanguage;
+  learningLanguage: AppLanguage;
   outputMode: OutputMode;
   autoStart: boolean;
   alwaysOnTop: boolean;
@@ -40,8 +40,8 @@ export interface Hotkeys {
 export interface AppSettings {
   hotkeys: Hotkeys;
   locale: Locale;
-  sourceLanguage: AppLanguage;
-  targetLanguage: AppLanguage;
+  nativeLanguage: AppLanguage;
+  learningLanguage: AppLanguage;
   outputMode: OutputMode;
   autoStart: boolean;
   alwaysOnTop: boolean;

@@ -14,14 +14,13 @@ export default function MainWindow() {
   const { result, loading, error, retry } = useOptimize(
     input,
     settings.outputMode,
-    settings.sourceLanguage,
-    settings.targetLanguage,
+    settings.nativeLanguage,
+    settings.learningLanguage,
   );
   const { write } = useClipboard();
   const isDraggingRef = useRef(false);
   const inputRef = useRef<HTMLTextAreaElement>(null);
-  const targetLanguageLabel = getLanguageLabel(settings.locale, settings.targetLanguage);
-  const languagePairLabel = `${getLanguageLabel(settings.locale, settings.sourceLanguage)} -> ${targetLanguageLabel}`;
+  const learningLanguageLabel = getLanguageLabel(settings.locale, settings.learningLanguage);
 
   useWindow({
     type: 'main',
@@ -90,8 +89,7 @@ export default function MainWindow() {
         onInputChange={setInput}
         originalText={input}
         resultText={result}
-        languagePairLabel={languagePairLabel}
-        targetLanguageLabel={targetLanguageLabel}
+        learningLanguageLabel={learningLanguageLabel}
         isLoading={loading || settingsLoading}
         error={error}
         onSettingsClick={handleSettingsClick}

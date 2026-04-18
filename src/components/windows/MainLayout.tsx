@@ -19,8 +19,7 @@ interface MainLayoutProps {
   onInputChange: (value: string) => void;
   originalText: string;
   resultText: string;
-  languagePairLabel: string;
-  targetLanguageLabel: string;
+  learningLanguageLabel: string;
   isLoading?: boolean;
   error?: string | null;
   onSettingsClick?: () => void;
@@ -35,8 +34,7 @@ export function MainLayout({
   onInputChange,
   originalText,
   resultText,
-  languagePairLabel,
-  targetLanguageLabel,
+  learningLanguageLabel,
   isLoading = false,
   error,
   onSettingsClick,
@@ -57,7 +55,7 @@ export function MainLayout({
       >
         <div className="ml-auto flex items-center gap-1">
           <span className="status-chip">{t("main.status")}</span>
-          <span className="status-chip">{languagePairLabel}</span>
+          <span className="status-chip">{learningLanguageLabel}</span>
           <Tooltip content={t("common.settings")}>
             <Button
               variant="ghost"
@@ -79,7 +77,7 @@ export function MainLayout({
                 <div>
                   <h2 className="text-sm font-semibold text-foreground">{t("main.inputTitle")}</h2>
                   <p className="mt-1 text-xs text-foreground/52">
-                    {t("main.inputDescription", { language: targetLanguageLabel })}
+                    {t("main.inputDescription", { language: learningLanguageLabel })}
                   </p>
                 </div>
                 <span className="font-mono text-[11px] text-foreground/38">
@@ -90,7 +88,7 @@ export function MainLayout({
                 ref={inputRef}
                 value={inputValue}
                 onChange={(event) => onInputChange(event.target.value)}
-                placeholder={t("main.inputPlaceholder", { language: targetLanguageLabel })}
+                placeholder={t("main.inputPlaceholder", { language: learningLanguageLabel })}
                 className="min-h-[104px] bg-primary/74"
                 autoResize
                 minRows={2}

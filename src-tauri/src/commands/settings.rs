@@ -19,11 +19,11 @@ fn default_locale() -> String {
     "zh-CN".to_string()
 }
 
-fn default_source_language() -> String {
+fn default_native_language() -> String {
     "chinese".to_string()
 }
 
-fn default_target_language() -> String {
+fn default_learning_language() -> String {
     "english".to_string()
 }
 
@@ -98,10 +98,10 @@ pub struct AppSettings {
     pub settings_hotkey: String,
     #[serde(default = "default_locale")]
     pub locale: String,
-    #[serde(default = "default_source_language")]
-    pub source_language: String,
-    #[serde(default = "default_target_language")]
-    pub target_language: String,
+    #[serde(default = "default_native_language", alias = "sourceLanguage")]
+    pub native_language: String,
+    #[serde(default = "default_learning_language", alias = "targetLanguage")]
+    pub learning_language: String,
     #[serde(default = "default_output_mode")]
     pub output_mode: String,
     #[serde(default)]
@@ -123,8 +123,8 @@ impl Default for AppSettings {
             explain_hotkey: default_explain_hotkey(),
             settings_hotkey: default_settings_hotkey(),
             locale: default_locale(),
-            source_language: default_source_language(),
-            target_language: default_target_language(),
+            native_language: default_native_language(),
+            learning_language: default_learning_language(),
             output_mode: default_output_mode(),
             auto_start: false,
             always_on_top: default_always_on_top(),
@@ -150,11 +150,11 @@ impl AppSettings {
         if !is_supported_locale(self.locale.trim()) {
             self.locale = default_locale();
         }
-        if !is_supported_language(self.source_language.trim()) {
-            self.source_language = default_source_language();
+        if !is_supported_language(self.native_language.trim()) {
+            self.native_language = default_native_language();
         }
-        if !is_supported_language(self.target_language.trim()) {
-            self.target_language = default_target_language();
+        if !is_supported_language(self.learning_language.trim()) {
+            self.learning_language = default_learning_language();
         }
         if self.output_mode.trim().is_empty() {
             self.output_mode = default_output_mode();

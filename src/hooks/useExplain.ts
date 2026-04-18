@@ -20,8 +20,8 @@ export interface UseExplainReturn {
 }
 
 export function useExplain(
-  sourceLanguage: string,
-  targetLanguage: string,
+  nativeLanguage: string,
+  learningLanguage: string,
   locale: 'zh-CN' | 'en-US',
 ): UseExplainReturn {
   const [result, setResult] = useState<ExplainResult | null>(null);
@@ -62,7 +62,7 @@ export function useExplain(
         setLoading(false);
       }
     }
-  }, [sourceLanguage, targetLanguage, locale]);
+  }, [nativeLanguage, learningLanguage, locale]);
 
   useEffect(() => {
     isMounted.current = true;

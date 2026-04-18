@@ -6,15 +6,15 @@ import type { ExplainResult } from "../../types";
 
 interface ExplainLayoutProps {
   result: ExplainResult;
-  languagePairLabel: string;
-  targetLanguageLabel: string;
+  learningLanguageLabel: string;
+  nativeLanguageLabel: string;
   className?: string;
 }
 
 export function ExplainLayout({
   result,
-  languagePairLabel,
-  targetLanguageLabel,
+  learningLanguageLabel,
+  nativeLanguageLabel,
   className,
 }: ExplainLayoutProps) {
   const { t } = useI18n();
@@ -34,7 +34,7 @@ export function ExplainLayout({
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <span className="status-chip">{t("explain.status")}</span>
-            <span className="status-chip">{languagePairLabel}</span>
+            <span className="status-chip">{learningLanguageLabel}</span>
           </div>
           <span className="font-mono text-[11px] text-foreground/42">
             {t("explain.triggerHint")}
@@ -56,7 +56,7 @@ export function ExplainLayout({
           </div>
           <div className="flex flex-col gap-1">
             <span className="eyebrow-label">
-              {t("explain.meaning", { language: targetLanguageLabel })}
+              {t("explain.meaning", { language: nativeLanguageLabel })}
             </span>
             <p className="text-sm leading-6 text-foreground/90">{result.meaning}</p>
           </div>

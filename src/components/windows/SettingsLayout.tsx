@@ -138,7 +138,12 @@ export function SettingsLayout({
     t("settings.outputMode.conservative");
   const localeLabel =
     localeOptions.find((option) => option.value === settings.locale)?.label ?? settings.locale;
-  const languagePairLabel = `${getLanguageLabel(settings.sourceLanguage)} -> ${getLanguageLabel(settings.targetLanguage)}`;
+  const nativeLanguageLabel = getLanguageLabel(settings.nativeLanguage);
+  const learningLanguageLabel = getLanguageLabel(settings.learningLanguage);
+  const languageSummaryLabel = t("settings.languageSummaryValue", {
+    native: nativeLanguageLabel,
+    learning: learningLanguageLabel,
+  });
   const aiStatusLabel = settings.aiProvider.apiKey ? t("settings.aiConfigured") : t("settings.aiFallback");
   const preferenceStatus = settings.alwaysOnTop ? t("settings.preferencesOnTop") : t("settings.preferencesOnDemand");
 
@@ -179,7 +184,7 @@ export function SettingsLayout({
               </div>
               <div className="rounded-[22px] border border-border/50 bg-primary/54 px-4 py-3 shadow-[inset_0_1px_0_rgb(var(--foreground)/0.03)]">
                 <p className="eyebrow-label">{t("settings.summaryLanguages")}</p>
-                <p className="mt-2 text-sm font-medium text-foreground">{languagePairLabel}</p>
+                <p className="mt-2 text-sm font-medium text-foreground">{languageSummaryLabel}</p>
               </div>
               <div className="rounded-[22px] border border-border/50 bg-primary/54 px-4 py-3 shadow-[inset_0_1px_0_rgb(var(--foreground)/0.03)]">
                 <p className="eyebrow-label">{t("settings.summaryProfile")}</p>
@@ -210,25 +215,25 @@ export function SettingsLayout({
                 options={localeOptions}
               />
               <Select
-                label={t("settings.sourceLanguage")}
-                value={settings.sourceLanguage}
+                label={t("settings.nativeLanguage")}
+                value={settings.nativeLanguage}
                 onChange={(event) =>
-                  updateSetting("sourceLanguage", event.target.value as AppSettings["sourceLanguage"])
+                  updateSetting("nativeLanguage", event.target.value as AppSettings["nativeLanguage"])
                 }
                 options={languageOptions.map((option) => ({
                   ...option,
-                  description: t("settings.sourceLanguageDescription", { language: option.label }),
+                  description: t("settings.nativeLanguageDescription", { language: option.label }),
                 }))}
               />
               <Select
-                label={t("settings.targetLanguage")}
-                value={settings.targetLanguage}
+                label={t("settings.learningLanguage")}
+                value={settings.learningLanguage}
                 onChange={(event) =>
-                  updateSetting("targetLanguage", event.target.value as AppSettings["targetLanguage"])
+                  updateSetting("learningLanguage", event.target.value as AppSettings["learningLanguage"])
                 }
                 options={languageOptions.map((option) => ({
                   ...option,
-                  description: t("settings.targetLanguageDescription", { language: option.label }),
+                  description: t("settings.learningLanguageDescription", { language: option.label }),
                 }))}
               />
               <div className="panel-inset px-4 py-3">
