@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="./logo.jpg" alt="LingoKey Logo" width="240" />
+</p>
+
 # LingoKey
 
 > 一个专门压缩 AI 编程英语工作流的桌面助手。
@@ -20,10 +24,6 @@ LingoKey 聚焦两个高频动作：
 - 用 Raycast、剪贴板历史或快捷指令把动作勉强串起来
 
 问题不在于找不到工具，而在于这条链路通常被拆成多个应用和多个动作。LingoKey 的目标不是替代所有工具，而是把开发者与 Codex、Claude Code、Cursor 等 AI 编程助手之间最常发生的英语摩擦，压缩成一层更短、更轻的系统级入口。
-
-## 界面预览
-
-![LingoKey 主窗口截图](./screenshot.png)
 
 ## 项目状态
 

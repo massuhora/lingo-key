@@ -228,8 +228,13 @@ pub fn run() {
             let quit_i = MenuItem::with_id(app, "quit", "退出", true, None::<&str>)?;
             let menu = Menu::with_items(app, &[&show_i, &settings_i, &quit_i])?;
 
+            let tray_icon = app
+                .default_window_icon()
+                .cloned()
+                .context("default window icon is not configured")?;
+
             TrayIconBuilder::new()
-                .icon(tauri::include_image!("icons/icon.ico"))
+                .icon(tray_icon)
                 .menu(&menu)
                 .show_menu_on_left_click(false)
                 .on_menu_event(|app: &tauri::AppHandle, event| {
