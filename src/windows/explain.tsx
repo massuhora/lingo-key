@@ -24,7 +24,7 @@ function ExplainWindow() {
 
   useWindow({
     type: 'explain',
-    hideOnBlur: false,
+    hideOnBlur: true,
   });
 
   useAppearance(settings);
