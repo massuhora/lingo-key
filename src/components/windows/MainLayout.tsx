@@ -1,3 +1,4 @@
+import { type RefObject } from "react";
 import { Settings, Sparkles, ArrowRight } from "lucide-react";
 import { cn } from "../../lib/utils";
 import {
@@ -11,6 +12,7 @@ import {
 } from "../ui";
 
 interface MainLayoutProps {
+  inputRef?: RefObject<HTMLTextAreaElement | null>;
   inputValue: string;
   onInputChange: (value: string) => void;
   originalText: string;
@@ -24,6 +26,7 @@ interface MainLayoutProps {
 }
 
 export function MainLayout({
+  inputRef,
   inputValue,
   onInputChange,
   originalText,
@@ -73,6 +76,7 @@ export function MainLayout({
             </span>
           </div>
           <Textarea
+            ref={inputRef}
             value={inputValue}
             onChange={(e) => onInputChange(e.target.value)}
             placeholder="输入需要润色的中文或混合文本..."

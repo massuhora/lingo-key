@@ -13,6 +13,7 @@ export default function MainWindow() {
   const { result, loading, error, retry } = useOptimize(input, settings.outputMode);
   const { write } = useClipboard();
   const isDraggingRef = useRef(false);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
 
   useWindow({
     type: 'main',
@@ -39,6 +40,22 @@ export default function MainWindow() {
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [result, handleCopyResult]);
 
+  useEffect(() => {
+    const focusInput = () => {
+      window.setTimeout(() => {
+        const textarea = inputRef.current;
+        if (!textarea) return;
+        textarea.focus();
+        const cursorPosition = textarea.value.length;
+        textarea.setSelectionRange(cursorPosition, cursorPosition);
+      }, 0);
+    };
+
+    focusInput();
+    window.addEventListener('focus', focusInput);
+    return () => window.removeEventListener('focus', focusInput);
+  }, []);
+
   const handleSettingsClick = useCallback(() => {
     void showWindow('settings');
   }, []);
@@ -59,6 +76,7 @@ export default function MainWindow() {
 
   return (
     <MainLayout
+      inputRef={inputRef}
       inputValue={input}
       onInputChange={setInput}
       originalText={input}
