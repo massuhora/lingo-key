@@ -11,9 +11,9 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
       <div
         ref={ref}
         className={cn(
-          "rounded-xl border transition-all duration-200",
+          "rounded-2xl transition-all duration-200",
           variant === "default" &&
-            "border-border bg-primary/50 shadow-sm hover:shadow-md hover:bg-primary/70",
+            "panel-surface hover:border-border-strong/60",
           variant === "ghost" && "border-transparent bg-transparent",
           className,
         )}
@@ -29,7 +29,7 @@ export const CardHeader = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivEleme
   ({ className, ...props }, ref) => (
     <div
       ref={ref}
-      className={cn("flex flex-col gap-1.5 px-4 py-4", className)}
+      className={cn("flex flex-col gap-1.5 px-5 py-5", className)}
       {...props}
     />
   ),
@@ -41,7 +41,7 @@ export const CardTitle = forwardRef<HTMLHeadingElement, HTMLAttributes<HTMLHeadi
   ({ className, ...props }, ref) => (
     <h3
       ref={ref}
-      className={cn("text-base font-semibold text-foreground", className)}
+      className={cn("text-base font-semibold tracking-[0.01em] text-foreground", className)}
       {...props}
     />
   ),
@@ -53,7 +53,7 @@ export const CardDescription = forwardRef<HTMLParagraphElement, HTMLAttributes<H
   ({ className, ...props }, ref) => (
     <p
       ref={ref}
-      className={cn("text-sm text-foreground/60", className)}
+      className={cn("supporting-text", className)}
       {...props}
     />
   ),
@@ -63,7 +63,7 @@ CardDescription.displayName = "CardDescription";
 
 export const CardContent = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
-    <div ref={ref} className={cn("px-4 pb-4", className)} {...props} />
+    <div ref={ref} className={cn("px-5 pb-5", className)} {...props} />
   ),
 );
 
@@ -73,7 +73,7 @@ export const CardFooter = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivEleme
   ({ className, ...props }, ref) => (
     <div
       ref={ref}
-      className={cn("flex items-center gap-2 px-4 pb-4", className)}
+      className={cn("flex items-center gap-2 px-5 pb-5", className)}
       {...props}
     />
   ),

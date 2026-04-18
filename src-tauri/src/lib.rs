@@ -201,6 +201,7 @@ pub fn run() {
             for label in ["main", "explain", "settings"] {
                 if let Some(window) = app.get_webview_window(label) {
                     let _ = window.set_always_on_top(settings.always_on_top);
+                    let _ = commands::window::apply_native_window_chrome(&window);
                     let _ = commands::window::apply_window_opacity(&window, settings.opacity);
                 }
             }

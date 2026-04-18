@@ -8,19 +8,19 @@ interface SpinnerProps {
 export function Spinner({ className, size = "md" }: SpinnerProps) {
   const sizeClasses = {
     sm: "h-4 w-4 border-2",
-    md: "h-6 w-6 border-2",
-    lg: "h-8 w-8 border-[3px]",
+    md: "h-5 w-5 border-2",
+    lg: "h-7 w-7 border-[3px]",
   };
 
   return (
     <div
       className={cn(
-        "inline-block animate-spin rounded-full border-solid border-current border-t-transparent",
+        "inline-block animate-spin rounded-full border-solid border-current border-b-transparent border-r-transparent",
         sizeClasses[size],
         className,
       )}
       role="status"
-      aria-label="加载中"
+      aria-label="Loading"
     />
   );
 }

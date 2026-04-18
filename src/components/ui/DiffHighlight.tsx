@@ -100,8 +100,8 @@ function renderMarkedText(
 
   const classes =
     variant === "delete"
-      ? "rounded-sm bg-destructive/10 px-1 py-0.5 text-destructive line-through decoration-2 decoration-destructive"
-      : "rounded-sm bg-accent/12 px-1 py-0.5 font-medium text-accent no-underline";
+      ? "rounded-md bg-destructive/10 px-1.5 py-0.5 text-destructive line-through decoration-2 decoration-destructive/80"
+      : "rounded-md bg-accent/12 px-1.5 py-0.5 font-medium text-accent no-underline";
 
   const Tag = variant === "delete" ? "del" : "ins";
 
@@ -129,7 +129,7 @@ export function DiffHighlight({
   return (
     <div
       className={cn(
-        "text-sm leading-relaxed text-foreground whitespace-pre-wrap break-words",
+        "whitespace-pre-wrap break-words text-sm leading-7 text-foreground",
         className,
       )}
     >

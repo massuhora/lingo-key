@@ -35,8 +35,8 @@ export function CopyButton({
       size="icon"
       onClick={handleCopy}
       className={cn(
-        "relative overflow-hidden transition-all duration-200",
-        copied && "text-accent",
+        "relative overflow-hidden rounded-xl transition-all duration-200",
+        copied && "border-accent/40 bg-accent/12 text-accent",
         className,
       )}
       aria-label={copied ? "已复制" : "复制到剪贴板"}

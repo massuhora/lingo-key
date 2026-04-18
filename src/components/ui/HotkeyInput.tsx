@@ -88,11 +88,19 @@ export function HotkeyInput({
 
   return (
     <div className={cn("flex flex-col gap-1.5", className)}>
-      {label && (
-        <label className="text-sm font-medium text-foreground/90">
-          {label}
-        </label>
-      )}
+      <div className="flex items-center justify-between gap-3">
+        {label && <label className="eyebrow-label">{label}</label>}
+        <span
+          className={cn(
+            "rounded-full border px-2.5 py-1 font-mono text-[10px] font-medium uppercase tracking-[0.18em] transition-all duration-200",
+            isRecording
+              ? "border-accent/45 bg-accent/12 text-accent"
+              : "border-border/55 bg-primary/65 text-foreground/45",
+          )}
+        >
+          {isRecording ? "Recording" : "Idle"}
+        </span>
+      </div>
       <input
         ref={inputRef}
         type="text"
@@ -103,14 +111,14 @@ export function HotkeyInput({
         onKeyDown={handleKeyDown}
         onKeyUp={handleKeyUp}
         className={cn(
-          "flex h-10 w-full rounded-lg border border-border bg-primary px-3 py-2 text-sm text-foreground text-center font-mono tracking-wide placeholder:text-foreground/40 transition-all duration-200 cursor-pointer select-none",
-          "hover:border-foreground/30 hover:bg-primary/80",
-          "focus-visible:border-accent focus-visible:bg-background focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent",
+          "flex h-12 w-full cursor-pointer select-none rounded-2xl border border-border/70 bg-primary/76 px-4 py-3 text-center font-mono text-sm tracking-[0.18em] text-foreground shadow-[inset_0_1px_0_rgb(var(--foreground)/0.04)] transition-all duration-200 placeholder:text-foreground/34",
+          "hover:border-border-strong/70 hover:bg-primary/84",
+          "focus-visible:border-accent focus-visible:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/25",
           isRecording &&
-            "border-accent bg-background ring-1 ring-accent animate-pulse",
+            "animate-pulse-soft border-accent bg-surface ring-2 ring-accent/20",
         )}
       />
-      <span className="text-xs text-foreground/40">
+      <span className="text-xs leading-5 text-foreground/46">
         {isRecording ? "按下你想设置的快捷键..." : "点击以录制新快捷键"}
       </span>
     </div>

@@ -22,24 +22,24 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     ref,
   ) => {
     const baseStyles =
-      "inline-flex items-center justify-center font-medium transition-all duration-200 ease-out rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98]";
+      "inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-transparent font-medium tracking-[0.01em] transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:pointer-events-none disabled:opacity-50 active:translate-y-px";
 
     const variants = {
       primary:
-        "bg-accent text-on-primary hover:bg-accent/90 shadow-sm hover:shadow-md",
+        "bg-accent text-on-primary shadow-glow hover:bg-accent/92 hover:shadow-[0_18px_38px_-18px_rgb(var(--accent)/0.78)]",
       secondary:
-        "bg-secondary text-foreground hover:bg-secondary/80 border border-border",
+        "border-border/70 bg-secondary/82 text-foreground shadow-[inset_0_1px_0_rgb(var(--foreground)/0.04)] hover:border-border-strong/70 hover:bg-secondary",
       ghost:
-        "bg-transparent text-foreground hover:bg-muted hover:text-foreground",
+        "text-foreground/72 hover:bg-foreground/6 hover:text-foreground",
       destructive:
-        "bg-destructive text-on-primary hover:bg-destructive/90",
+        "bg-destructive text-on-primary shadow-[0_12px_28px_-18px_rgb(var(--destructive)/0.75)] hover:bg-destructive/92",
     };
 
     const sizes = {
-      sm: "h-8 px-3 text-sm",
-      md: "h-10 px-4 text-sm",
+      sm: "h-9 px-3.5 text-sm",
+      md: "h-11 px-4.5 text-sm",
       lg: "h-12 px-6 text-base",
-      icon: "h-9 w-9 p-0",
+      icon: "h-10 w-10 p-0",
     };
 
     return (

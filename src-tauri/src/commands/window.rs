@@ -11,6 +11,46 @@ fn ensure_window_visible(window: &tauri::WebviewWindow) -> Result<(), String> {
 }
 
 #[cfg(target_os = "windows")]
+pub(crate) fn apply_native_window_chrome(window: &tauri::WebviewWindow) -> Result<(), String> {
+    use winapi::shared::minwindef::DWORD;
+    use winapi::ctypes::c_void;
+    use winapi::um::dwmapi::DwmSetWindowAttribute;
+
+    const DWMWA_WINDOW_CORNER_PREFERENCE: DWORD = 33;
+    const DWMWA_BORDER_COLOR: DWORD = 34;
+    const DWMWCP_ROUND: u32 = 2;
+    const DWMWA_COLOR_NONE: u32 = 0xFFFFFFFE;
+
+    let hwnd = window.hwnd().map_err(|e| e.to_string())?;
+    let hwnd = hwnd.0 as _;
+
+    unsafe {
+        let corner_preference = DWMWCP_ROUND;
+        let _ = DwmSetWindowAttribute(
+            hwnd,
+            DWMWA_WINDOW_CORNER_PREFERENCE,
+            &corner_preference as *const _ as *const c_void,
+            std::mem::size_of_val(&corner_preference) as u32,
+        );
+
+        let border_color = DWMWA_COLOR_NONE;
+        let _ = DwmSetWindowAttribute(
+            hwnd,
+            DWMWA_BORDER_COLOR,
+            &border_color as *const _ as *const c_void,
+            std::mem::size_of_val(&border_color) as u32,
+        );
+    }
+
+    Ok(())
+}
+
+#[cfg(not(target_os = "windows"))]
+pub(crate) fn apply_native_window_chrome(_window: &tauri::WebviewWindow) -> Result<(), String> {
+    Ok(())
+}
+
+#[cfg(target_os = "windows")]
 fn apply_native_window_opacity(window: &tauri::WebviewWindow, opacity: f64) -> Result<bool, String> {
     use winapi::um::winuser::{
         GetWindowLongW, SetLayeredWindowAttributes, SetWindowLongW, GWL_EXSTYLE, LWA_ALPHA,
@@ -23,6 +63,14 @@ fn apply_native_window_opacity(window: &tauri::WebviewWindow, opacity: f64) -> R
 
     unsafe {
         let ex_style = GetWindowLongW(hwnd, GWL_EXSTYLE);
+
+        if opacity >= 0.999 {
+            if ex_style & WS_EX_LAYERED as i32 != 0 {
+                SetWindowLongW(hwnd, GWL_EXSTYLE, ex_style & !(WS_EX_LAYERED as i32));
+            }
+            return Ok(false);
+        }
+
         if ex_style & WS_EX_LAYERED as i32 == 0 {
             SetWindowLongW(hwnd, GWL_EXSTYLE, ex_style | WS_EX_LAYERED as i32);
         }
@@ -57,6 +105,7 @@ pub fn apply_managed_window_preferences(
     window
         .set_always_on_top(settings.always_on_top)
         .map_err(|e| e.to_string())?;
+    apply_native_window_chrome(window)?;
     apply_window_opacity(window, settings.opacity)?;
 
     Ok(())

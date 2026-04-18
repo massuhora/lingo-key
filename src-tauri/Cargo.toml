@@ -27,4 +27,4 @@ tokio = { version = "1", features = ["rt-multi-thread"] }
 anyhow = "1"
 
 [target.'cfg(windows)'.dependencies]
-winapi = { version = "0.3", features = ["winuser"] }
+winapi = { version = "0.3", features = ["dwmapi", "winuser"] }

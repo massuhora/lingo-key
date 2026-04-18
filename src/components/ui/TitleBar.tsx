@@ -74,14 +74,14 @@ export function TitleBar({
   return (
     <div
       className={cn(
-        "flex h-10 items-center justify-between select-none",
+        "flex h-12 items-center justify-between border-b border-border/55 bg-surface-soft/72 select-none backdrop-blur-xl",
         className,
       )}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
       <div
-        className="flex flex-1 items-center gap-2 px-3"
+        className="flex flex-1 items-center gap-3 px-4"
         data-window-drag-handle={dragBehavior === 'manual' ? 'true' : undefined}
         data-tauri-drag-region={dragBehavior === 'native' ? true : undefined}
         onMouseDown={(e) => {
@@ -90,11 +90,15 @@ export function TitleBar({
           }
         }}
       >
+        <span
+          aria-hidden="true"
+          className="h-2.5 w-2.5 shrink-0 rounded-full bg-accent shadow-[0_0_0_4px_rgb(var(--accent)/0.14)]"
+        />
         {title && (
           <span
             data-window-drag-handle={dragBehavior === 'manual' ? 'true' : undefined}
             data-tauri-drag-region={dragBehavior === 'native' ? true : undefined}
-            className="text-xs font-medium text-foreground/70"
+            className="font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-foreground/72"
           >
             {title}
           </span>
@@ -102,14 +106,14 @@ export function TitleBar({
         {children}
       </div>
 
-      <div className="flex items-center">
+      <div className="flex items-center pr-2">
         {showMinimize && (
           <button
             onClick={handleMinimize}
             className={cn(
-              "flex h-10 w-10 items-center justify-center text-foreground/60 transition-all duration-200",
-              "hover:bg-secondary hover:text-foreground",
-              "focus-visible:outline-none focus-visible:bg-secondary",
+              "flex h-8 w-8 items-center justify-center rounded-xl text-foreground/58 transition-all duration-200",
+              "hover:bg-primary/90 hover:text-foreground",
+              "focus-visible:outline-none focus-visible:bg-primary/90",
               !isHovered && "opacity-60",
             )}
             aria-label="最小化"
@@ -121,7 +125,7 @@ export function TitleBar({
           <button
             onClick={handleClose}
             className={cn(
-              "flex h-10 w-10 items-center justify-center text-foreground/60 transition-all duration-200",
+              "flex h-8 w-8 items-center justify-center rounded-xl text-foreground/58 transition-all duration-200",
               "hover:bg-destructive hover:text-on-primary",
               "focus-visible:outline-none focus-visible:bg-destructive focus-visible:text-on-primary",
               !isHovered && "opacity-60",

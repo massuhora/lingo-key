@@ -1,10 +1,20 @@
-import { RotateCcw, Save } from "lucide-react";
+import {
+  Bot,
+  Keyboard,
+  Palette,
+  RotateCcw,
+  Save,
+  SlidersHorizontal,
+  Sparkles,
+  Zap,
+} from "lucide-react";
 import { cn } from "../../lib/utils";
 import type { AppSettings, OutputMode, Theme } from "../../types";
 import {
   Button,
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
   HotkeyInput,
@@ -25,14 +35,35 @@ interface SettingsLayoutProps {
 }
 
 const outputOptions = [
-  { value: "conservative", label: "保守" },
-  { value: "enhanced", label: "增强" },
+  {
+    value: "conservative",
+    label: "保守",
+    description: "更接近原文语义和结构，适合轻量润色。",
+  },
+  {
+    value: "enhanced",
+    label: "增强",
+    description: "会更积极地重写表达，适合直接发给 AI。",
+  },
 ];
 
 const themeOptions = [
-  { value: "dark", label: "深色" },
-  { value: "light", label: "浅色" },
+  {
+    value: "dark",
+    label: "深色",
+    description: "对比更强，适合夜间或深色工作区。",
+  },
+  {
+    value: "light",
+    label: "浅色",
+    description: "界面更轻盈，适合明亮桌面环境。",
+  },
 ];
+
+const themeMeta: Record<Theme, string> = {
+  dark: "深色主题",
+  light: "浅色主题",
+};
 
 export function SettingsLayout({
   settings,
@@ -59,17 +90,48 @@ export function SettingsLayout({
   return (
     <div
       className={cn(
-        "flex h-full w-full flex-col overflow-hidden rounded-xl border border-border bg-background shadow-2xl",
+        "window-shell",
         className,
       )}
     >
       <TitleBar title="设置" />
 
-      <div className="flex flex-1 flex-col gap-4 overflow-auto px-4 pb-4">
-        {/* Output Mode */}
+      <div className="flex flex-1 flex-col overflow-auto px-4 pb-4 pt-4">
+        <div className="flex flex-col gap-4">
+          <section className="panel-surface px-5 py-5">
+            <div className="flex items-start justify-between gap-4">
+              <div className="min-w-0">
+                <p className="eyebrow-label">Workspace Preferences</p>
+                <h1 className="mt-2 text-[22px] font-semibold tracking-tight text-foreground">
+                  把 LingoKey 调成更顺手的工作状态
+                </h1>
+                <p className="mt-2 supporting-text">
+                  热键、主题、透明度和 AI 接口配置都在这里统一管理，不改工作流，只优化你的使用手感。
+                </p>
+              </div>
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-border/60 bg-accent/10 text-accent">
+                <Sparkles className="h-5 w-5" />
+              </div>
+            </div>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <span className="status-chip">{themeMeta[settings.theme]}</span>
+              <span className="status-chip">
+                {hasChanges ? "有未保存更改" : "已与本地配置同步"}
+              </span>
+            </div>
+          </section>
+
         <Card>
           <CardHeader>
-            <CardTitle>输出模式</CardTitle>
+            <div className="flex items-start gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-border/55 bg-primary/72 text-foreground/70">
+                <Zap className="h-4 w-4" />
+              </div>
+              <div>
+                <CardTitle>输出模式</CardTitle>
+                <CardDescription>决定润色结果更贴近原文还是更积极优化。</CardDescription>
+              </div>
+            </div>
           </CardHeader>
           <CardContent>
             <Select
@@ -80,16 +142,23 @@ export function SettingsLayout({
               }
               options={outputOptions}
             />
-            <p className="mt-2 text-xs text-foreground/50">
+            <p className="mt-3 text-xs leading-5 text-foreground/50">
               保守模式更接近原文；增强模式会进行更积极的改进。
             </p>
           </CardContent>
         </Card>
 
-        {/* Appearance */}
         <Card>
           <CardHeader>
-            <CardTitle>外观</CardTitle>
+            <div className="flex items-start gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-border/55 bg-primary/72 text-foreground/70">
+                <Palette className="h-4 w-4" />
+              </div>
+              <div>
+                <CardTitle>外观</CardTitle>
+                <CardDescription>调整主题和透明度，让窗口更融入你的桌面环境。</CardDescription>
+              </div>
+            </div>
           </CardHeader>
           <CardContent className="flex flex-col gap-4">
             <Select
@@ -113,10 +182,17 @@ export function SettingsLayout({
           </CardContent>
         </Card>
 
-        {/* Hotkeys */}
         <Card>
           <CardHeader>
-            <CardTitle>快捷键</CardTitle>
+            <div className="flex items-start gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-border/55 bg-primary/72 text-foreground/70">
+                <Keyboard className="h-4 w-4" />
+              </div>
+              <div>
+                <CardTitle>快捷键</CardTitle>
+                <CardDescription>为三个窗口设置更顺手的全局热键组合。</CardDescription>
+              </div>
+            </div>
           </CardHeader>
           <CardContent className="flex flex-col gap-3">
             <HotkeyInput
@@ -137,10 +213,17 @@ export function SettingsLayout({
           </CardContent>
         </Card>
 
-        {/* AI Provider */}
         <Card>
           <CardHeader>
-            <CardTitle>AI 服务商</CardTitle>
+            <div className="flex items-start gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-border/55 bg-primary/72 text-foreground/70">
+                <Bot className="h-4 w-4" />
+              </div>
+              <div>
+                <CardTitle>AI 服务商</CardTitle>
+                <CardDescription>接入任何兼容 OpenAI 的接口地址、密钥和模型。</CardDescription>
+              </div>
+            </div>
           </CardHeader>
           <CardContent className="flex flex-col gap-3">
             <Input
@@ -178,16 +261,23 @@ export function SettingsLayout({
               }
               placeholder="gpt-4o-mini"
             />
-            <p className="text-xs text-foreground/50">
+            <p className="text-xs leading-5 text-foreground/50">
               支持任何兼容 OpenAI 的 API。留空 API 密钥以使用备用模式。
             </p>
           </CardContent>
         </Card>
 
-        {/* Preferences */}
         <Card>
           <CardHeader>
-            <CardTitle>偏好设置</CardTitle>
+            <div className="flex items-start gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-border/55 bg-primary/72 text-foreground/70">
+                <SlidersHorizontal className="h-4 w-4" />
+              </div>
+              <div>
+                <CardTitle>偏好设置</CardTitle>
+                <CardDescription>控制窗口行为，保持 LingoKey 与你的工作区节奏一致。</CardDescription>
+              </div>
+            </div>
           </CardHeader>
           <CardContent className="flex flex-col gap-4">
             <Toggle
@@ -206,25 +296,39 @@ export function SettingsLayout({
           </CardContent>
         </Card>
 
-        {/* Actions */}
-        <div className="mt-auto flex items-center justify-end gap-3 pt-2">
-          <Button
-            variant="ghost"
-            onClick={onReset}
-            className="gap-2"
-            disabled={!hasChanges}
-          >
-            <RotateCcw className="h-4 w-4" />
-            重置
-          </Button>
-          <Button
-            onClick={onSave}
-            className="gap-2"
-            disabled={!hasChanges}
-          >
-            <Save className="h-4 w-4" />
-            保存更改
-          </Button>
+          <div className="sticky bottom-0 z-10 mt-auto pt-6">
+            <div className="panel-surface flex items-center justify-between gap-4 px-4 py-3">
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-foreground">
+                  {hasChanges ? "有未保存更改" : "设置已同步"}
+                </p>
+                <p className="mt-1 text-xs leading-5 text-foreground/52">
+                  {hasChanges
+                    ? "保存后会立即应用到对应窗口。"
+                    : "你当前看到的是已生效的本地配置。"}
+                </p>
+              </div>
+              <div className="flex items-center gap-3">
+                <Button
+                  variant="ghost"
+                  onClick={onReset}
+                  className="gap-2"
+                  disabled={!hasChanges}
+                >
+                  <RotateCcw className="h-4 w-4" />
+                  重置
+                </Button>
+                <Button
+                  onClick={onSave}
+                  className="min-w-[128px] gap-2"
+                  disabled={!hasChanges}
+                >
+                  <Save className="h-4 w-4" />
+                  保存更改
+                </Button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

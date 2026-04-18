@@ -5,6 +5,7 @@ import { cn } from "../../lib/utils";
 interface SelectOption {
   value: string;
   label: string;
+  description?: string;
 }
 
 interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
@@ -16,27 +17,43 @@ interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
 export const Select = forwardRef<HTMLSelectElement, SelectProps>(
   ({ className, label, options, error, id, children, ...props }, ref) => {
     const selectId = id || label?.toLowerCase().replace(/\s+/g, "-");
+    const currentValue = String(props.value ?? props.defaultValue ?? "");
+    const selectedOption =
+      options.find((option) => option.value === currentValue) ?? options[0];
 
     return (
-      <div className="flex flex-col gap-1.5">
-        {label && (
-          <label
-            htmlFor={selectId}
-            className="text-sm font-medium text-foreground/90"
-          >
-            {label}
-          </label>
+      <div className="flex flex-col gap-2">
+        {(label || selectedOption) && (
+          <div className="flex items-center justify-between gap-3">
+            {label && (
+              <label
+                htmlFor={selectId}
+                className="eyebrow-label"
+              >
+                {label}
+              </label>
+            )}
+            {selectedOption && (
+              <span className="rounded-full border border-border/55 bg-primary/70 px-2.5 py-1 font-mono text-[10px] font-medium uppercase tracking-[0.16em] text-foreground/50">
+                {selectedOption.label}
+              </span>
+            )}
+          </div>
         )}
         <div className="relative">
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-y-1.5 right-1.5 w-11 rounded-xl border border-border/45 bg-surface-soft/88"
+          />
           <select
             ref={ref}
             id={selectId}
             className={cn(
-              "flex h-10 w-full appearance-none rounded-lg border border-border bg-primary px-3 py-2 pr-10 text-sm text-foreground transition-colors duration-200",
-              "hover:border-foreground/30 hover:bg-primary/80",
-              "focus-visible:border-accent focus-visible:bg-background focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent",
+              "flex h-12 w-full cursor-pointer appearance-none rounded-2xl border border-border/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.01))] bg-primary/76 px-4 py-3 pr-14 text-sm font-medium text-foreground shadow-[inset_0_1px_0_rgb(var(--foreground)/0.05)] transition-all duration-200",
+              "hover:border-border-strong/70 hover:bg-primary/84",
+              "focus-visible:border-accent focus-visible:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/25",
               "disabled:cursor-not-allowed disabled:opacity-50",
-              error && "border-destructive focus-visible:ring-destructive",
+              error && "border-destructive focus-visible:ring-destructive/25",
               className,
             )}
             {...props}
@@ -48,8 +65,13 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
             ))}
             {children}
           </select>
-          <ChevronDown className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground/50 pointer-events-none" />
+          <ChevronDown className="pointer-events-none absolute right-[18px] top-1/2 h-4 w-4 -translate-y-1/2 text-foreground/52" />
         </div>
+        {selectedOption?.description && !error && (
+          <p className="text-xs leading-5 text-foreground/50">
+            {selectedOption.description}
+          </p>
+        )}
         {error && (
           <span className="text-xs text-destructive animate-fade-in">
             {error}
