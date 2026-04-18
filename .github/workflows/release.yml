@@ -1,7 +1,17 @@
-name: publish
+name: release
 
 on:
   workflow_dispatch:
+    inputs:
+      release_tag:
+        description: "Version tag to publish, for example v0.2.0"
+        required: true
+        type: string
+      prerelease:
+        description: "Mark this GitHub release as a prerelease"
+        required: true
+        default: false
+        type: boolean
   push:
     tags:
       - "v*"
@@ -25,10 +35,15 @@ jobs:
             args: "--target aarch64-apple-darwin"
 
     runs-on: ${{ matrix.os }}
+    env:
+      RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.release_tag || github.ref_name }}
+      IS_PRERELEASE: ${{ github.event_name == 'workflow_dispatch' && inputs.prerelease || 'false' }}
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Install Linux dependencies
         if: matrix.os == 'ubuntu-22.04'
@@ -41,6 +56,39 @@ jobs:
         with:
           node-version: 20
           cache: npm
+
+      - name: Validate release tag and project versions
+        id: release_meta
+        shell: bash
+        run: |
+          TAG="${RELEASE_TAG}"
+          if [[ ! "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+([-.][0-9A-Za-z.-]+)?$ ]]; then
+            echo "Release tag must look like v1.2.3 or v1.2.3-rc.1, got: $TAG"
+            exit 1
+          fi
+
+          VERSION="${TAG#v}"
+          PACKAGE_VERSION="$(node -p "require('./package.json').version")"
+          TAURI_VERSION="$(node -p "require('./src-tauri/tauri.conf.json').version")"
+          CARGO_VERSION="$(node -e "const fs = require('fs'); const match = fs.readFileSync('src-tauri/Cargo.toml', 'utf8').match(/^version\\s*=\\s*\"([^\"]+)\"/m); if (!match) process.exit(1); console.log(match[1]);")"
+
+          if [[ "$VERSION" != "$PACKAGE_VERSION" ]]; then
+            echo "package.json version ($PACKAGE_VERSION) does not match release tag ($TAG)"
+            exit 1
+          fi
+
+          if [[ "$VERSION" != "$TAURI_VERSION" ]]; then
+            echo "src-tauri/tauri.conf.json version ($TAURI_VERSION) does not match release tag ($TAG)"
+            exit 1
+          fi
+
+          if [[ "$VERSION" != "$CARGO_VERSION" ]]; then
+            echo "src-tauri/Cargo.toml version ($CARGO_VERSION) does not match release tag ($TAG)"
+            exit 1
+          fi
+
+          echo "release_tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "release_version=$VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Install Rust stable
         uses: dtolnay/rust-toolchain@stable
@@ -58,13 +106,14 @@ jobs:
         run: npm ci
 
       - name: Build and publish release assets
-        uses: tauri-apps/tauri-action@v0
+        uses: tauri-apps/tauri-action@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tagName: v__VERSION__
-          releaseName: "LingoKey v__VERSION__"
-          releaseBody: "See the assets attached to this release."
+          tagName: ${{ steps.release_meta.outputs.release_tag }}
+          releaseName: "LingoKey ${{ steps.release_meta.outputs.release_tag }}"
+          releaseBody: "Automated desktop release for LingoKey."
           releaseDraft: false
-          prerelease: false
+          prerelease: ${{ env.IS_PRERELEASE }}
+          generateReleaseNotes: true
           args: ${{ matrix.args }}

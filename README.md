@@ -27,7 +27,7 @@ The problem is not a lack of tools. The problem is that this chain usually gets 
 
 ## Project Status
 
-The current version is `0.1.0`. The repository is still in the MVP stage. The core capabilities are already usable, but the main focus is still on polishing the experience, tightening the workflow, and validating product boundaries.
+The current version is `0.2.0`. The repository is still in the MVP stage. The core capabilities are already usable, but the main focus is still on polishing the experience, tightening the workflow, and validating product boundaries.
 
 The current scope mainly includes:
 
