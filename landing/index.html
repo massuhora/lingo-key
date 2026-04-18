@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LingoKey — Compress Your English Workflow with AI</title>
+  <meta name="description" content="A desktop assistant that compresses the English workflow around AI coding. Optimize prompts before writing, get lightweight explanations after reading." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" type="image/png" href="lingokey-icon.png" />
+</head>
+<body>
+  <!-- Navbar -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <a href="#" class="nav-brand">
+        <img src="lingokey-icon.png" alt="LingoKey" class="nav-logo" />
+        <span class="nav-brand-text">LingoKey</span>
+      </a>
+      <div class="nav-links">
+        <a href="#features" data-i18n="nav.features">Features</a>
+        <a href="#workflow" data-i18n="nav.workflow">Workflow</a>
+        <a href="#download" data-i18n="nav.download">Download</a>
+      </div>
+      <div class="nav-actions">
+        <button class="lang-toggle" id="langToggle" aria-label="Toggle language">
+          <span class="lang-label" id="langLabel">EN</span>
+        </button>
+        <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+          <svg class="theme-icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+          <svg class="theme-icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        </button>
+      </div>
+      <button class="nav-mobile-toggle" id="navMobileToggle" aria-label="Toggle menu">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="nav-mobile-menu" id="navMobileMenu">
+      <a href="#features" data-i18n="nav.features">Features</a>
+      <a href="#workflow" data-i18n="nav.workflow">Workflow</a>
+      <a href="#download" data-i18n="nav.download">Download</a>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-backdrop"></div>
+    <div class="hero-container">
+      <div class="hero-badge">
+        <span class="eyebrow" data-i18n="hero.eyebrow">Desktop Assistant for AI Coding</span>
+      </div>
+      <h1 class="hero-title">
+        <span data-i18n="hero.title1">Compress Your</span>
+        <span class="hero-title-accent" data-i18n="hero.title2">English Workflow</span>
+      </h1>
+      <p class="hero-subtitle" data-i18n="hero.subtitle">
+        One hotkey to optimize prompts before writing. One hotkey to explain expressions after reading. LingoKey sits at the system level, reducing friction between you and AI coding assistants.
+      </p>
+      <div class="hero-actions">
+        <a href="#download" class="btn btn-primary" data-i18n="hero.ctaPrimary">Download Free</a>
+        <a href="#workflow" class="btn btn-secondary" data-i18n="hero.ctaSecondary">See How It Works</a>
+      </div>
+      <div class="hero-meta">
+        <span class="status-chip">
+          <span class="status-dot"></span>
+          <span data-i18n="hero.status">Open Source · MIT License</span>
+        </span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="features" id="features">
+    <div class="section-container">
+      <div class="section-header">
+        <span class="eyebrow" data-i18n="features.eyebrow">Core Features</span>
+        <h2 class="section-title" data-i18n="features.title">Two Hotkeys. Zero Friction.</h2>
+        <p class="section-desc" data-i18n="features.desc">
+          LingoKey is not a general translator or grammar checker. It is a workflow layer built specifically for developers who collaborate with AI coding assistants.
+        </p>
+      </div>
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </div>
+          <h3 class="feature-title" data-i18n="features.optimize.title">Optimize Before Writing</h3>
+          <p class="feature-desc" data-i18n="features.optimize.desc">
+            Turn Chinese or mixed Chinese-English drafts into natural, accurate English prompts. Preserve your technical intent without over-engineering the prompt.
+          </p>
+          <ul class="feature-list">
+            <li data-i18n="features.optimize.li1">Conservative & Enhanced modes</li>
+            <li data-i18n="features.optimize.li2">Diff highlighting for changes</li>
+            <li data-i18n="features.optimize.li3">One-click copy to clipboard</li>
+          </ul>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          </div>
+          <h3 class="feature-title" data-i18n="features.explain.title">Explain After Reading</h3>
+          <p class="feature-desc" data-i18n="features.explain.desc">
+            Select unfamiliar English expressions in any app and get a lightweight popup with Chinese meaning, technical context, and alternative phrasing.
+          </p>
+          <ul class="feature-list">
+            <li data-i18n="features.explain.li1">Chinese meaning + tech context</li>
+            <li data-i18n="features.explain.li2">Alternative expressions</li>
+            <li data-i18n="features.explain.li3">Appears near your cursor</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Workflow -->
+  <section class="workflow" id="workflow">
+    <div class="section-container">
+      <div class="section-header">
+        <span class="eyebrow" data-i18n="workflow.eyebrow">How It Works</span>
+        <h2 class="section-title" data-i18n="workflow.title">Shorter Path, Same Intent</h2>
+      </div>
+      <div class="workflow-steps">
+        <div class="workflow-step">
+          <div class="workflow-step-num">01</div>
+          <div class="workflow-step-content">
+            <h3 data-i18n="workflow.step1.title">Press the Main Hotkey</h3>
+            <p data-i18n="workflow.step1.desc">A compact floating window appears. The input box is already focused. Just type your draft in Chinese or mixed English.</p>
+            <div class="kbd-group">
+              <kbd class="kbd-chip">Ctrl</kbd>
+              <span>+</span>
+              <kbd class="kbd-chip">Shift</kbd>
+              <span>+</span>
+              <kbd class="kbd-chip">L</kbd>
+            </div>
+          </div>
+        </div>
+        <div class="workflow-step">
+          <div class="workflow-step-num">02</div>
+          <div class="workflow-step-content">
+            <h3 data-i18n="workflow.step2.title">Get the Optimized Result</h3>
+            <p data-i18n="workflow.step2.desc">LingoKey rewrites your input into natural English. Changes are highlighted so you can see exactly what was improved.</p>
+          </div>
+        </div>
+        <div class="workflow-step">
+          <div class="workflow-step-num">03</div>
+          <div class="workflow-step-content">
+            <h3 data-i18n="workflow.step3.title">Copy and Continue</h3>
+            <p data-i18n="workflow.step3.desc">Press Ctrl+C to copy the result, then paste it into Codex, Claude Code, Cursor, or any AI assistant you use.</p>
+          </div>
+        </div>
+        <div class="workflow-step">
+          <div class="workflow-step-num">04</div>
+          <div class="workflow-step-content">
+            <h3 data-i18n="workflow.step4.title">Explain on Demand</h3>
+            <p data-i18n="workflow.step4.desc">Reading AI output and see an unfamiliar phrase? Select it and press the explain hotkey for instant context.</p>
+            <div class="kbd-group">
+              <kbd class="kbd-chip">Ctrl</kbd>
+              <span>+</span>
+              <kbd class="kbd-chip">Shift</kbd>
+              <span>+</span>
+              <kbd class="kbd-chip">E</kbd>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Hotkeys -->
+  <section class="hotkeys">
+    <div class="section-container">
+      <div class="hotkeys-card">
+        <div class="hotkeys-content">
+          <h3 data-i18n="hotkeys.title">Built for Keyboard-First Developers</h3>
+          <p data-i18n="hotkeys.desc">Every action is reachable without leaving the keyboard. Customize all shortcuts in the settings window.</p>
+        </div>
+        <div class="hotkeys-list">
+          <div class="hotkey-item">
+            <span class="hotkey-label" data-i18n="hotkeys.main">Main Window</span>
+            <div class="kbd-group">
+              <kbd class="kbd-chip">Ctrl</kbd>
+              <span>+</span>
+              <kbd class="kbd-chip">Shift</kbd>
+              <span>+</span>
+              <kbd class="kbd-chip">L</kbd>
+            </div>
+          </div>
+          <div class="hotkey-item">
+            <span class="hotkey-label" data-i18n="hotkeys.explain">Explain Window</span>
+            <div class="kbd-group">
+              <kbd class="kbd-chip">Ctrl</kbd>
+              <span>+</span>
+              <kbd class="kbd-chip">Shift</kbd>
+              <span>+</span>
+              <kbd class="kbd-chip">E</kbd>
+            </div>
+          </div>
+          <div class="hotkey-item">
+            <span class="hotkey-label" data-i18n="hotkeys.settings">Settings</span>
+            <div class="kbd-group">
+              <kbd class="kbd-chip">Ctrl</kbd>
+              <span>+</span>
+              <kbd class="kbd-chip">Shift</kbd>
+              <span>+</span>
+              <kbd class="kbd-chip">S</kbd>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Download -->
+  <section class="download" id="download">
+    <div class="section-container">
+      <div class="download-card">
+        <div class="download-content">
+          <span class="eyebrow" data-i18n="download.eyebrow">Get Started</span>
+          <h2 class="section-title" data-i18n="download.title">Ready to Compress Your Workflow?</h2>
+          <p class="section-desc" data-i18n="download.desc">LingoKey is open source and free. Download the latest release for Windows, macOS, or Linux. Bring your own API key and start using it in under a minute.</p>
+          <div class="download-actions">
+            <a href="https://github.com/massuhora/lingo-key/releases" class="btn btn-primary btn-lg" target="_blank" rel="noopener" data-i18n="download.cta">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Download Latest Release
+            </a>
+            <a href="https://github.com/massuhora/lingo-key" class="btn btn-secondary btn-lg" target="_blank" rel="noopener" data-i18n="download.github">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+              View on GitHub
+            </a>
+          </div>
+          <div class="download-platforms">
+            <span data-i18n="download.platforms">Windows · macOS · Linux</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-brand">
+        <img src="lingokey-icon.png" alt="LingoKey" class="footer-logo" />
+        <span class="footer-brand-text">LingoKey</span>
+      </div>
+      <p class="footer-copy" data-i18n="footer.copy">© 2026 LingoKey. Open source under MIT License.</p>
+      <div class="footer-links">
+        <a href="https://github.com/massuhora/lingo-key" target="_blank" rel="noopener" data-i18n="footer.github">GitHub</a>
+        <a href="../README.md" data-i18n="footer.docs">Documentation</a>
+        <a href="../LICENSE" data-i18n="footer.license">License</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="i18n.js"></script>
+  <script src="main.js"></script>
+</body>
+</html>
