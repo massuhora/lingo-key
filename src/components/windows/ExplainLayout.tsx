@@ -1,18 +1,16 @@
 import { BookOpen } from "lucide-react";
 import { cn } from "../../lib/utils";
-import { TitleBar } from "../ui";
+import { TitleBar, WindowResizeHandles } from "../ui";
 import type { ExplainResult } from "../../types";
 
 interface ExplainLayoutProps {
   result: ExplainResult;
   className?: string;
-  onDragStateChange?: (dragging: boolean) => void;
 }
 
 export function ExplainLayout({
   result,
   className,
-  onDragStateChange,
 }: ExplainLayoutProps) {
   return (
     <div
@@ -21,12 +19,13 @@ export function ExplainLayout({
         className,
       )}
     >
+      <WindowResizeHandles />
+
       <TitleBar
         title="解释"
         showMinimize={false}
-        showClose={false}
+        showClose
         dragBehavior="manual"
-        onDragStateChange={onDragStateChange}
       />
 
       <div className="flex flex-1 flex-col gap-3 overflow-auto px-4 pb-4 pt-4">

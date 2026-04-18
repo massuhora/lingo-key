@@ -49,12 +49,15 @@ export function useWindow(options: UseWindowOptions): void {
     const handleMouseDown = (e: MouseEvent) => {
       const target = e.target as HTMLElement | null;
       if (target?.closest('[data-window-resize-handle]')) {
-        scheduleSuppressBlurReset(400);
+        scheduleSuppressBlurReset(2000);
         return;
       }
 
-      if (target?.closest('[data-tauri-drag-region]')) {
-        scheduleSuppressBlurReset(100);
+      if (
+        target?.closest('[data-tauri-drag-region]')
+        || target?.closest('[data-window-drag-handle]')
+      ) {
+        scheduleSuppressBlurReset(1000);
       }
     };
 

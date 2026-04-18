@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom/client';
 import '../index.css';
 import { ExplainLayout } from '../components/windows/ExplainLayout';
@@ -7,7 +7,7 @@ import { useSettings } from '../hooks/useSettings';
 import { useClipboard } from '../hooks/useClipboard';
 import { useWindow } from '../hooks/useWindow';
 import { useAppearance } from '../hooks/useAppearance';
-import { hideCurrentWindow, listenClipboardText, readClipboard } from '../lib/tauri';
+import { listenClipboardText, readClipboard } from '../lib/tauri';
 import type { ExplainResult } from '../types';
 
 const EMPTY_RESULT: ExplainResult = {
@@ -21,27 +21,13 @@ function ExplainWindow() {
   const { settings } = useSettings();
   const { text: clipboardText, read } = useClipboard();
   const [originalText, setOriginalText] = useState('');
-  const isDraggingRef = useRef(false);
 
   useWindow({
     type: 'explain',
-    hideOnBlur: true,
-    shouldHideOnBlur: () => !isDraggingRef.current,
+    hideOnBlur: false,
   });
 
   useAppearance(settings);
-
-  const handleDragStateChange = useCallback((dragging: boolean) => {
-    isDraggingRef.current = dragging;
-
-    if (!dragging) {
-      window.setTimeout(() => {
-        if (!isDraggingRef.current && !document.hasFocus()) {
-          void hideCurrentWindow();
-        }
-      }, 0);
-    }
-  }, []);
 
   useEffect(() => {
     let unlisten: (() => void) | undefined;
@@ -107,10 +93,7 @@ function ExplainWindow() {
   };
 
   return (
-    <ExplainLayout
-      result={displayResult}
-      onDragStateChange={handleDragStateChange}
-    />
+    <ExplainLayout result={displayResult} />
   );
 }
 

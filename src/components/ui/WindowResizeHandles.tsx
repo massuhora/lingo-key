@@ -4,6 +4,7 @@ import { cn } from "../../lib/utils";
 
 interface WindowResizeHandlesProps {
   className?: string;
+  onResizeStateChange?: (resizing: boolean) => void;
 }
 
 type ResizeDirection =
@@ -56,6 +57,7 @@ const resizeHandles: Array<{
 
 export function WindowResizeHandles({
   className,
+  onResizeStateChange,
 }: WindowResizeHandlesProps) {
   const windowApi = useMemo(() => getCurrentWebviewWindow(), []);
 
@@ -65,11 +67,14 @@ export function WindowResizeHandles({
     if (event.button !== 0) return;
 
     event.preventDefault();
+    onResizeStateChange?.(true);
 
     try {
       await windowApi.startResizeDragging(direction);
     } catch {
       // Tauri may be unavailable in browser preview.
+    } finally {
+      onResizeStateChange?.(false);
     }
   };
 
