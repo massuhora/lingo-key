@@ -187,6 +187,7 @@ pub fn run() {
             commands::window::focus_window,
             commands::window::start_dragging,
             commands::window::set_window_opacity,
+            commands::window::set_window_always_on_top,
             commands::settings::get_settings,
             commands::settings::set_settings,
             commands::settings::reset_settings,

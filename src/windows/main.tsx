@@ -9,7 +9,7 @@ import { hideCurrentWindow, showWindow } from '../lib/tauri';
 import { getLanguageLabel, I18nProvider } from '../lib/i18n';
 
 export default function MainWindow() {
-  const { settings, loading: settingsLoading } = useSettings();
+  const { settings, updateSettings, loading: settingsLoading } = useSettings();
   const [input, setInput] = useState('');
   const { result, loading, error, retry } = useOptimize(
     input,
@@ -24,7 +24,7 @@ export default function MainWindow() {
 
   useWindow({
     type: 'main',
-    hideOnBlur: true,
+    hideOnBlur: !settings.alwaysOnTop,
     shouldHideOnBlur: () => !isDraggingRef.current,
   });
 
@@ -67,6 +67,10 @@ export default function MainWindow() {
     void showWindow('settings');
   }, []);
 
+  const handleAlwaysOnTopToggle = useCallback(() => {
+    void updateSettings({ alwaysOnTop: !settings.alwaysOnTop });
+  }, [settings.alwaysOnTop, updateSettings]);
+
   const handleDragStateChange = useCallback((dragging: boolean) => {
     isDraggingRef.current = dragging;
 
@@ -92,6 +96,8 @@ export default function MainWindow() {
         learningLanguageLabel={learningLanguageLabel}
         isLoading={loading || settingsLoading}
         error={error}
+        alwaysOnTop={settings.alwaysOnTop}
+        onAlwaysOnTopToggle={handleAlwaysOnTopToggle}
         onSettingsClick={handleSettingsClick}
         onSubmit={retry}
         onDragStateChange={handleDragStateChange}

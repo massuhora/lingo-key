@@ -1,5 +1,5 @@
 import { type RefObject } from "react";
-import { Settings, Sparkles, ArrowRight, Command } from "lucide-react";
+import { Settings, Sparkles, ArrowRight, Command, Pin, PinOff } from "lucide-react";
 import { useI18n } from "../../lib/i18n";
 import { cn } from "../../lib/utils";
 import {
@@ -22,6 +22,8 @@ interface MainLayoutProps {
   learningLanguageLabel: string;
   isLoading?: boolean;
   error?: string | null;
+  alwaysOnTop?: boolean;
+  onAlwaysOnTopToggle?: () => void;
   onSettingsClick?: () => void;
   onSubmit?: () => void;
   onDragStateChange?: (dragging: boolean) => void;
@@ -37,6 +39,8 @@ export function MainLayout({
   learningLanguageLabel,
   isLoading = false,
   error,
+  alwaysOnTop = false,
+  onAlwaysOnTopToggle,
   onSettingsClick,
   onSubmit,
   onDragStateChange,
@@ -56,6 +60,21 @@ export function MainLayout({
         <div className="ml-auto flex items-center gap-1">
           <span className="status-chip">{t("main.status")}</span>
           <span className="status-chip">{learningLanguageLabel}</span>
+          <Tooltip content={alwaysOnTop ? t("main.unpinWindow") : t("main.pinWindow")}>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onAlwaysOnTopToggle}
+              aria-pressed={alwaysOnTop}
+              aria-label={alwaysOnTop ? t("main.unpinWindow") : t("main.pinWindow")}
+              className={cn(
+                "h-8 w-8 text-foreground/54 hover:text-foreground",
+                alwaysOnTop && "bg-accent/12 text-accent hover:bg-accent/16 hover:text-accent",
+              )}
+            >
+              {alwaysOnTop ? <Pin className="h-4 w-4" /> : <PinOff className="h-4 w-4" />}
+            </Button>
+          </Tooltip>
           <Tooltip content={t("common.settings")}>
             <Button
               variant="ghost"

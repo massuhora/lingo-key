@@ -5,7 +5,12 @@ import { SettingsLayout } from '../components/windows/SettingsLayout';
 import { useWindow } from '../hooks/useWindow';
 import { useAppearance } from '../hooks/useAppearance';
 import { I18nProvider, translate } from '../lib/i18n';
-import { getSettings, setSettings, setWindowOpacity } from '../lib/tauri';
+import {
+  getSettings,
+  setSettings,
+  setWindowAlwaysOnTop,
+  setWindowOpacity,
+} from '../lib/tauri';
 import { DEFAULT_SETTINGS, toAppSettings, toSettings, mergeSettings } from '../lib/settings';
 import type { AppSettings, Settings } from '../types';
 
@@ -41,6 +46,16 @@ function SettingsWindow() {
       setWindowOpacity('explain', uiSettings.opacity),
     ]);
   }, [loading, uiSettings.opacity]);
+
+  useEffect(() => {
+    if (loading) return;
+
+    void Promise.all([
+      setWindowAlwaysOnTop('main', uiSettings.alwaysOnTop),
+      setWindowAlwaysOnTop('explain', uiSettings.alwaysOnTop),
+      setWindowAlwaysOnTop('settings', uiSettings.alwaysOnTop),
+    ]);
+  }, [loading, uiSettings.alwaysOnTop]);
 
   const hasChanges = useMemo(() => {
     return JSON.stringify(uiSettings) !== JSON.stringify(toAppSettings(backendSettings));

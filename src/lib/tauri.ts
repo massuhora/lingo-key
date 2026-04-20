@@ -58,6 +58,19 @@ export async function setWindowOpacity(label: string, opacity: number): Promise<
   }
 }
 
+export async function setWindowAlwaysOnTop(
+  label: string,
+  alwaysOnTop: boolean,
+): Promise<boolean> {
+  try {
+    await invoke('set_window_always_on_top', { label, alwaysOnTop });
+    return true;
+  } catch (error) {
+    console.error('Failed to set window always-on-top:', error);
+    return false;
+  }
+}
+
 export async function setCurrentWindowOpacity(opacity: number): Promise<boolean> {
   const win = getCurrentWebviewWindow();
   return setWindowOpacity(win.label, opacity);

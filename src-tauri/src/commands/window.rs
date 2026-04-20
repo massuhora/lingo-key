@@ -228,3 +228,17 @@ pub fn set_window_opacity(
         .ok_or_else(|| format!("{} window not found", label))?;
     apply_window_opacity(&window, opacity)
 }
+
+#[tauri::command]
+pub fn set_window_always_on_top(
+    app: tauri::AppHandle,
+    label: String,
+    always_on_top: bool,
+) -> Result<(), String> {
+    let window = app
+        .get_webview_window(&label)
+        .ok_or_else(|| format!("{} window not found", label))?;
+    window
+        .set_always_on_top(always_on_top)
+        .map_err(|e| e.to_string())
+}
