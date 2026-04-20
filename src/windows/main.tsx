@@ -5,7 +5,7 @@ import { useSettings } from '../hooks/useSettings';
 import { useClipboard } from '../hooks/useClipboard';
 import { useWindow } from '../hooks/useWindow';
 import { useAppearance } from '../hooks/useAppearance';
-import { hideCurrentWindow, showWindow } from '../lib/tauri';
+import { hideCurrentWindow, setWindowAlwaysOnTop, showWindow } from '../lib/tauri';
 import { getLanguageLabel, I18nProvider } from '../lib/i18n';
 
 export default function MainWindow() {
@@ -68,7 +68,14 @@ export default function MainWindow() {
   }, []);
 
   const handleAlwaysOnTopToggle = useCallback(() => {
-    void updateSettings({ alwaysOnTop: !settings.alwaysOnTop });
+    const alwaysOnTop = !settings.alwaysOnTop;
+
+    void Promise.all([
+      setWindowAlwaysOnTop('main', alwaysOnTop),
+      setWindowAlwaysOnTop('explain', alwaysOnTop),
+      setWindowAlwaysOnTop('settings', alwaysOnTop),
+    ]);
+    void updateSettings({ alwaysOnTop });
   }, [settings.alwaysOnTop, updateSettings]);
 
   const handleDragStateChange = useCallback((dragging: boolean) => {
