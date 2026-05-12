@@ -1,11 +1,11 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "LingoKey",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "identifier": "com.lingokey.app",
   "build": {
     "beforeDevCommand": "npm run dev",
-    "devUrl": "http://localhost:1420",
+    "devUrl": "http://127.0.0.1:5173",
     "beforeBuildCommand": "npm run build",
     "frontendDist": "../dist"
   },
@@ -15,10 +15,10 @@
         "label": "main",
         "title": "LingoKey",
         "url": "/",
-        "width": 520,
-        "height": 420,
-        "minWidth": 400,
-        "minHeight": 320,
+        "width": 560,
+        "height": 640,
+        "minWidth": 420,
+        "minHeight": 360,
         "resizable": true,
         "decorations": false,
         "transparent": false,
@@ -27,38 +27,6 @@
         "visible": false,
         "skipTaskbar": false,
         "center": true
-      },
-      {
-        "label": "explain",
-        "title": "解释",
-        "url": "/explain",
-        "width": 360,
-        "height": 280,
-        "minWidth": 320,
-        "minHeight": 240,
-        "decorations": false,
-        "transparent": false,
-        "shadow": false,
-        "alwaysOnTop": true,
-        "visible": false,
-        "skipTaskbar": true,
-        "center": false
-      },
-      {
-        "label": "settings",
-        "title": "设置",
-        "url": "/settings",
-        "width": 480,
-        "height": 520,
-        "minWidth": 400,
-        "minHeight": 440,
-        "decorations": false,
-        "transparent": false,
-        "shadow": false,
-        "alwaysOnTop": true,
-        "visible": false,
-        "skipTaskbar": true,
-        "center": true
       }
     ],
     "security": {
@@ -66,7 +34,7 @@
       "capabilities": [
         {
           "identifier": "default",
-          "windows": ["main", "explain", "settings"],
+          "windows": ["main"],
           "permissions": [
             "core:default",
             "core:window:default",

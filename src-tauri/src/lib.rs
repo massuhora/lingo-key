@@ -44,11 +44,37 @@ pub fn apply_tray_locale(state: &AppState, locale: &str) {
     }
 }
 
+fn save_window_size_on_hide(window: &tauri::WebviewWindow) {
+    let label = window.label().to_string();
+    if let Ok(size) = window.outer_size() {
+        let app = window.app_handle();
+        let state = app.state::<AppState>();
+        let mut settings = state.settings.lock().unwrap().clone();
+        settings.window_sizes.insert(
+            label,
+            commands::settings::WindowSize {
+                width: size.width as f64,
+                height: size.height as f64,
+            },
+        );
+        use tauri_plugin_store::StoreExt;
+        if let Ok(store) = app.store("settings.json") {
+            let _ = store.set(
+                "settings",
+                serde_json::to_value(&settings).unwrap(),
+            );
+            let _ = store.save();
+        }
+        *state.settings.lock().unwrap() = settings;
+    }
+}
+
 fn setup_prevent_close(window: &tauri::WebviewWindow) {
     let w = window.clone();
     window.on_window_event(move |event| {
         if let WindowEvent::CloseRequested { api, .. } = event {
             api.prevent_close();
+            save_window_size_on_hide(&w);
             let _ = w.hide();
         }
     });
@@ -85,14 +111,8 @@ pub fn register_hotkeys(
     let main_hotkey = settings.main_hotkey.clone();
     gs.on_shortcut(main_hotkey.as_str(), move |app, _shortcut, event| {
         if event.state == ShortcutState::Pressed {
-            if let Some(window) = app.get_webview_window("main") {
-                let state = app.state::<AppState>();
-                let _ = window.unminimize();
-                let _ = window.center();
-                let _ = window.show();
-                let _ = commands::window::apply_managed_window_preferences(&window, &state);
-                let _ = window.set_focus();
-            }
+            let state = app.state::<AppState>();
+            let _ = commands::window::show_main_window(app.clone(), state);
         }
     })
     .with_context(|| format!("failed to register main hotkey: {}", main_hotkey))?;
@@ -132,14 +152,8 @@ pub fn register_hotkeys(
     let settings_hotkey = settings.settings_hotkey.clone();
     gs.on_shortcut(settings_hotkey.as_str(), move |app, _shortcut, event| {
         if event.state == ShortcutState::Pressed {
-            if let Some(window) = app.get_webview_window("settings") {
-                let state = app.state::<AppState>();
-                let _ = window.unminimize();
-                let _ = window.center();
-                let _ = window.show();
-                let _ = commands::window::apply_managed_window_preferences(&window, &state);
-                let _ = window.set_focus();
-            }
+            let state = app.state::<AppState>();
+            let _ = commands::window::show_settings_window(app.clone(), state);
         }
     })
     .with_context(|| format!("failed to register settings hotkey: {}", settings_hotkey))?;
@@ -191,6 +205,7 @@ pub fn run() {
             commands::settings::get_settings,
             commands::settings::set_settings,
             commands::settings::reset_settings,
+            commands::settings::save_window_size,
             commands::clipboard::read_clipboard,
             commands::clipboard::write_clipboard,
             commands::hotkey::update_hotkeys,
@@ -226,7 +241,7 @@ pub fn run() {
             }
 
             // Apply alwaysOnTop preference.
-            for label in ["main", "explain", "settings"] {
+            for label in ["main"] {
                 if let Some(window) = app.get_webview_window(label) {
                     let _ = window.set_always_on_top(settings.always_on_top);
                     let _ = commands::window::apply_native_window_chrome(&window);
@@ -244,7 +259,7 @@ pub fn run() {
             }
 
             // Setup close-to-hide for all windows to prevent destruction.
-            for label in ["main", "explain", "settings"] {
+            for label in ["main"] {
                 if let Some(window) = app.get_webview_window(label) {
                     setup_prevent_close(&window);
                 }

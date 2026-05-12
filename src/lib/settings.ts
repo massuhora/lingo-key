@@ -38,6 +38,7 @@ export const DEFAULT_SETTINGS: Settings = {
   theme: 'dark',
   opacity: 1.0,
   aiProvider: DEFAULT_AI_PROVIDER,
+  windowSizes: {},
 };
 
 type LegacySettingsFields = {
@@ -174,6 +175,7 @@ export function mergeSettings(partial: Partial<Settings>): Settings {
       ...DEFAULT_SETTINGS.aiProvider,
       ...(partial.aiProvider ?? {}),
     },
+    windowSizes: partial.windowSizes ?? {},
   };
 }
 
@@ -193,6 +195,7 @@ export function toAppSettings(settings: Settings): AppSettings {
     theme: settings.theme,
     opacity: settings.opacity,
     aiProvider: settings.aiProvider,
+    windowSizes: settings.windowSizes,
   };
 }
 
@@ -210,5 +213,6 @@ export function toSettings(app: AppSettings): Settings {
     theme: app.theme,
     opacity: app.opacity,
     aiProvider: app.aiProvider,
+    windowSizes: app.windowSizes,
   };
 }

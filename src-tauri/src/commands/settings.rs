@@ -51,6 +51,13 @@ fn default_model() -> String {
     "deepseek-chat".to_string()
 }
 
+#[derive(Serialize, Deserialize, Clone, Debug, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct WindowSize {
+    pub width: f64,
+    pub height: f64,
+}
+
 fn is_supported_language(language: &str) -> bool {
     matches!(
         language,
@@ -114,6 +121,8 @@ pub struct AppSettings {
     pub opacity: f64,
     #[serde(default)]
     pub ai_provider: AiProvider,
+    #[serde(default)]
+    pub window_sizes: std::collections::HashMap<String, WindowSize>,
 }
 
 impl Default for AppSettings {
@@ -131,6 +140,7 @@ impl Default for AppSettings {
             theme: default_theme(),
             opacity: default_opacity(),
             ai_provider: AiProvider::default(),
+            window_sizes: std::collections::HashMap::new(),
         }
     }
 }
@@ -206,18 +216,20 @@ pub async fn set_settings(
         let _ = autostart.disable();
     }
 
-    // Update alwaysOnTop for all windows
-    for label in ["main", "explain", "settings"] {
+    // Update window preferences for the unified app window.
+    for label in ["main"] {
         if let Some(window) = app.get_webview_window(label) {
             let _: Result<(), _> = window.set_always_on_top(settings.always_on_top);
             let _: Result<bool, _> = crate::commands::window::apply_window_opacity(&window, settings.opacity);
         }
     }
 
-    // Update in-memory state and re-register hotkeys
+    // Update in-memory state (preserve window sizes) and re-register hotkeys
     {
         let mut locked = state.settings.lock().map_err(|e| e.to_string())?;
+        let window_sizes = locked.window_sizes.clone();
         *locked = settings.clone();
+        locked.window_sizes = window_sizes;
     }
 
     crate::apply_tray_locale(&state, &settings.locale);
@@ -238,4 +250,27 @@ pub async fn reset_settings(
 ) -> Result<AppSettings, String> {
     let defaults = AppSettings::default();
     set_settings(app, state, defaults).await
+}
+
+#[tauri::command]
+pub fn save_window_size(
+    app: tauri::AppHandle,
+    label: String,
+    width: f64,
+    height: f64,
+) -> Result<(), String> {
+    use tauri_plugin_store::StoreExt;
+    let state = app.state::<AppState>();
+    let mut settings = state.settings.lock().map_err(|e| e.to_string())?.clone();
+    settings
+        .window_sizes
+        .insert(label.clone(), WindowSize { width, height });
+
+    let store = app.store("settings.json").map_err(|e| e.to_string())?;
+    store
+        .set("settings", serde_json::to_value(&settings).map_err(|e| e.to_string())?);
+    store.save().map_err(|e| e.to_string())?;
+
+    *state.settings.lock().map_err(|e| e.to_string())? = settings;
+    Ok(())
 }

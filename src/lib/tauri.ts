@@ -4,6 +4,8 @@ import { readText, writeText } from '@tauri-apps/plugin-clipboard-manager';
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
 import type { Settings, ExplainResult } from '../types';
 
+export type OpenView = 'optimize' | 'explain' | 'settings';
+
 // Backend command wrappers
 
 export async function showWindow(label: string): Promise<void> {
@@ -117,7 +119,7 @@ export async function explainText(text: string): Promise<ExplainResult> {
 export async function hideCurrentWindow(): Promise<void> {
   try {
     const win = getCurrentWebviewWindow();
-    await win.hide();
+    await invoke('hide_window', { label: win.label });
   } catch (error) {
     console.error('Failed to hide current window:', error);
   }
@@ -154,6 +156,14 @@ export function listenSettingsChanged(
   callback: (settings: Settings) => void,
 ): Promise<UnlistenFn> {
   return listen('settings-changed', (event: Event<Settings>) => {
+    callback(event.payload);
+  });
+}
+
+export function listenOpenView(
+  callback: (view: OpenView) => void,
+): Promise<UnlistenFn> {
+  return listen('open-view', (event: Event<OpenView>) => {
     callback(event.payload);
   });
 }

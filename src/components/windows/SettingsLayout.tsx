@@ -1,4 +1,5 @@
 import {
+  ArrowLeft,
   Bot,
   Keyboard,
   Languages,
@@ -26,6 +27,7 @@ import {
   Slider,
   TitleBar,
   Toggle,
+  WindowResizeHandles,
 } from "../ui";
 
 interface SettingsLayoutProps {
@@ -34,6 +36,7 @@ interface SettingsLayoutProps {
   onSave: () => Promise<void>;
   onReset: () => void;
   hasChanges?: boolean;
+  onBack?: () => void;
   className?: string;
 }
 
@@ -81,6 +84,7 @@ export function SettingsLayout({
   onSave,
   onReset,
   hasChanges = false,
+  onBack,
   className,
 }: SettingsLayoutProps) {
   const { locale, t, getLanguageLabel } = useI18n();
@@ -149,7 +153,20 @@ export function SettingsLayout({
 
   return (
     <div className={cn("window-shell settings-backdrop", className)}>
-      <TitleBar title={t("settings.title")} />
+      <WindowResizeHandles />
+      <TitleBar title={t("settings.title")}>
+        <div className="ml-auto flex items-center gap-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onBack}
+            aria-label={t("common.backToPrompt")}
+            className="h-8 w-8 text-foreground/54 hover:text-foreground"
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+        </div>
+      </TitleBar>
 
       <div className="relative flex flex-1 flex-col overflow-auto px-4 pb-4 pt-4">
         <div
@@ -438,3 +455,4 @@ export function SettingsLayout({
     </div>
   );
 }
+

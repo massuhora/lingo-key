@@ -29,6 +29,7 @@ export interface Settings {
   theme: Theme;
   opacity: number;
   aiProvider: AiProvider;
+  windowSizes?: Record<string, WindowSize>;
 }
 
 export interface Hotkeys {
@@ -48,6 +49,7 @@ export interface AppSettings {
   theme: Theme;
   opacity: number;
   aiProvider: AiProvider;
+  windowSizes?: Record<string, WindowSize>;
 }
 
 export interface ExplainResult {
@@ -59,4 +61,9 @@ export interface ExplainResult {
 export interface DiffChunk {
   type: 'equal' | 'insert' | 'delete';
   value: string;
+}
+
+export interface WindowSize {
+  width: number;
+  height: number;
 }

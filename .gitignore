@@ -25,3 +25,6 @@ docs/*
 *.sw?
 
 .codex/
+
+# Terminal Paste Image folder
+.cp-images/

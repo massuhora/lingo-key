@@ -1,5 +1,13 @@
 import { type RefObject } from "react";
-import { Settings, Sparkles, ArrowRight, Command, Pin, PinOff } from "lucide-react";
+import {
+  Settings,
+  Sparkles,
+  ArrowRight,
+  Command,
+  Pin,
+  PinOff,
+  BookOpen,
+} from "lucide-react";
 import { useI18n } from "../../lib/i18n";
 import { cn } from "../../lib/utils";
 import {
@@ -25,6 +33,7 @@ interface MainLayoutProps {
   alwaysOnTop?: boolean;
   onAlwaysOnTopToggle?: () => void;
   onSettingsClick?: () => void;
+  onExplainClick?: () => void;
   onSubmit?: () => void;
   onDragStateChange?: (dragging: boolean) => void;
   className?: string;
@@ -42,6 +51,7 @@ export function MainLayout({
   alwaysOnTop = false,
   onAlwaysOnTopToggle,
   onSettingsClick,
+  onExplainClick,
   onSubmit,
   onDragStateChange,
   className,
@@ -60,6 +70,17 @@ export function MainLayout({
         <div className="ml-auto flex items-center gap-1">
           <span className="status-chip">{t("main.status")}</span>
           <span className="status-chip">{learningLanguageLabel}</span>
+          <Tooltip content={t("explain.title")}>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onExplainClick}
+              aria-label={t("explain.title")}
+              className="h-8 w-8 text-foreground/54 hover:text-foreground"
+            >
+              <BookOpen className="h-4 w-4" />
+            </Button>
+          </Tooltip>
           <Tooltip content={alwaysOnTop ? t("main.unpinWindow") : t("main.pinWindow")}>
             <Button
               variant="ghost"
@@ -80,6 +101,7 @@ export function MainLayout({
               variant="ghost"
               size="icon"
               onClick={onSettingsClick}
+              aria-label={t("common.settings")}
               className="h-8 w-8 text-foreground/54 hover:text-foreground"
             >
               <Settings className="h-4 w-4" />

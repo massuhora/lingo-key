@@ -1,7 +1,33 @@
 use tauri::{Emitter, Manager};
 
-use crate::AppState;
+use crate::commands::settings::WindowSize;
 use crate::cursor::get_cursor_position;
+use crate::AppState;
+
+fn unified_label(label: &str) -> &str {
+    match label {
+        "main" | "explain" | "settings" => "main",
+        other => other,
+    }
+}
+
+fn emit_open_view(window: &tauri::WebviewWindow, view: &str) -> Result<(), String> {
+    window
+        .app_handle()
+        .emit_to("main", "open-view", view)
+        .map_err(|e| e.to_string())
+}
+
+fn apply_saved_window_size(window: &tauri::WebviewWindow, state: &AppState) {
+    if let Ok(settings) = state.settings.lock() {
+        if let Some(saved) = settings.window_sizes.get("main") {
+            let _ = window.set_size(tauri::Size::Physical(tauri::PhysicalSize {
+                width: saved.width as u32,
+                height: saved.height as u32,
+            }));
+        }
+    }
+}
 
 fn ensure_window_visible(window: &tauri::WebviewWindow) -> Result<(), String> {
     if window.is_minimized().map_err(|e| e.to_string())? {
@@ -12,8 +38,8 @@ fn ensure_window_visible(window: &tauri::WebviewWindow) -> Result<(), String> {
 
 #[cfg(target_os = "windows")]
 pub(crate) fn apply_native_window_chrome(window: &tauri::WebviewWindow) -> Result<(), String> {
-    use winapi::shared::minwindef::DWORD;
     use winapi::ctypes::c_void;
+    use winapi::shared::minwindef::DWORD;
     use winapi::um::dwmapi::DwmSetWindowAttribute;
 
     const DWMWA_WINDOW_CORNER_PREFERENCE: DWORD = 33;
@@ -117,9 +143,11 @@ pub fn show_main_window(app: tauri::AppHandle, state: tauri::State<'_, AppState>
         .get_webview_window("main")
         .ok_or("main window not found")?;
     ensure_window_visible(&window)?;
+    apply_saved_window_size(&window, &state);
     window.center().map_err(|e| e.to_string())?;
     window.show().map_err(|e| e.to_string())?;
     apply_managed_window_preferences(&window, &state)?;
+    emit_open_view(&window, "optimize")?;
     window.set_focus().map_err(|e| e.to_string())?;
     Ok(())
 }
@@ -127,8 +155,8 @@ pub fn show_main_window(app: tauri::AppHandle, state: tauri::State<'_, AppState>
 #[tauri::command]
 pub fn show_explain_window(app: tauri::AppHandle, state: tauri::State<'_, AppState>) -> Result<(), String> {
     let window = app
-        .get_webview_window("explain")
-        .ok_or("explain window not found")?;
+        .get_webview_window("main")
+        .ok_or("main window not found")?;
 
     let (cursor_x, cursor_y) = get_cursor_position()?;
     let monitor = window
@@ -138,8 +166,9 @@ pub fn show_explain_window(app: tauri::AppHandle, state: tauri::State<'_, AppSta
     let monitor_pos = monitor.position();
     let monitor_size = monitor.size();
 
-    let window_width: i32 = 360;
-    let window_height: i32 = 280;
+    let current_size = window.outer_size().map_err(|e| e.to_string())?;
+    let window_width = current_size.width as i32;
+    let window_height = current_size.height as i32;
     let offset: i32 = 16;
 
     let mut pos_x = cursor_x + offset;
@@ -167,52 +196,81 @@ pub fn show_explain_window(app: tauri::AppHandle, state: tauri::State<'_, AppSta
     ensure_window_visible(&window)?;
     window.show().map_err(|e| e.to_string())?;
     apply_managed_window_preferences(&window, &state)?;
+    emit_open_view(&window, "explain")?;
     window.set_focus().map_err(|e| e.to_string())?;
 
     Ok(())
 }
 
-/// Show the explain window and emit the provided text to it.
+/// Show the explain view in the unified window and emit the provided text to it.
 pub fn show_explain_with_text(app: &tauri::AppHandle, text: String) -> Result<(), String> {
     let state = app.state::<AppState>();
     show_explain_window(app.clone(), state)?;
-    app.emit_to("explain", "clipboard-text", text)
+    app.emit_to("main", "clipboard-text", text)
         .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
 pub fn show_settings_window(app: tauri::AppHandle, state: tauri::State<'_, AppState>) -> Result<(), String> {
     let window = app
-        .get_webview_window("settings")
-        .ok_or("settings window not found")?;
+        .get_webview_window("main")
+        .ok_or("main window not found")?;
     ensure_window_visible(&window)?;
+    apply_saved_window_size(&window, &state);
     window.center().map_err(|e| e.to_string())?;
     window.show().map_err(|e| e.to_string())?;
     apply_managed_window_preferences(&window, &state)?;
+    emit_open_view(&window, "settings")?;
     window.set_focus().map_err(|e| e.to_string())?;
     Ok(())
 }
 
 #[tauri::command]
-pub fn hide_window(app: tauri::AppHandle, label: String) -> Result<(), String> {
+pub fn hide_window(
+    app: tauri::AppHandle,
+    label: String,
+    state: tauri::State<'_, AppState>,
+) -> Result<(), String> {
+    use tauri_plugin_store::StoreExt;
+
+    let label = unified_label(&label).to_string();
     let window = app
         .get_webview_window(&label)
         .ok_or_else(|| format!("{} window not found", label))?;
+    if let Ok(size) = window.outer_size() {
+        let mut settings = state.settings.lock().map_err(|e| e.to_string())?;
+        settings.window_sizes.insert(
+            label.clone(),
+            WindowSize {
+                width: size.width as f64,
+                height: size.height as f64,
+            },
+        );
+        if let Ok(store) = app.store("settings.json") {
+            let _ = store.set(
+                "settings",
+                serde_json::to_value(&*settings).map_err(|e| e.to_string())?,
+            );
+            let _ = store.save();
+        }
+    }
     window.hide().map_err(|e| e.to_string())
 }
 
 #[tauri::command]
 pub fn focus_window(app: tauri::AppHandle, label: String) -> Result<(), String> {
+    let label = unified_label(&label);
     let window = app
-        .get_webview_window(&label)
+        .get_webview_window(label)
         .ok_or_else(|| format!("{} window not found", label))?;
     window.set_focus().map_err(|e| e.to_string())
 }
 
 #[tauri::command]
 pub fn start_dragging(app: tauri::AppHandle, label: String) -> Result<(), String> {
+    let label = unified_label(&label);
     let window = app
-        .get_webview_window(&label)
+        .get_webview_window(label)
         .ok_or_else(|| format!("{} window not found", label))?;
     window.start_dragging().map_err(|e| e.to_string())
 }
@@ -223,8 +281,9 @@ pub fn set_window_opacity(
     label: String,
     opacity: f64,
 ) -> Result<bool, String> {
+    let label = unified_label(&label);
     let window = app
-        .get_webview_window(&label)
+        .get_webview_window(label)
         .ok_or_else(|| format!("{} window not found", label))?;
     apply_window_opacity(&window, opacity)
 }
@@ -235,8 +294,9 @@ pub fn set_window_always_on_top(
     label: String,
     always_on_top: bool,
 ) -> Result<(), String> {
+    let label = unified_label(&label);
     let window = app
-        .get_webview_window(&label)
+        .get_webview_window(label)
         .ok_or_else(|| format!("{} window not found", label))?;
     window
         .set_always_on_top(always_on_top)
