@@ -1,6 +1,6 @@
 [package]
 name = "lingokey"
-version = "0.3.1"
+version = "0.3.2"
 description = "LingoKey - AI programming English assistant"
 authors = ["you"]
 edition = "2021"
