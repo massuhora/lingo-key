@@ -70,6 +70,15 @@ export interface HistoryItem {
   favorite: boolean;
 }
 
+export interface FavoriteReuseHint {
+  id: string;
+  kind: HistoryKind;
+  expression: string;
+  meaning: string;
+  context?: string;
+  score: number;
+}
+
 export interface DiffChunk {
   type: 'equal' | 'insert' | 'delete';
   value: string;

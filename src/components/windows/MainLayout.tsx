@@ -8,9 +8,11 @@ import {
   PinOff,
   BookOpen,
   History,
+  Star,
 } from "lucide-react";
 import { useI18n } from "../../lib/i18n";
 import { cn } from "../../lib/utils";
+import type { FavoriteReuseHint } from "../../types";
 import {
   Button,
   CopyButton,
@@ -28,6 +30,7 @@ interface MainLayoutProps {
   onInputChange: (value: string) => void;
   originalText: string;
   resultText: string;
+  favoriteReuseHints?: FavoriteReuseHint[];
   learningLanguageLabel: string;
   isLoading?: boolean;
   error?: string | null;
@@ -49,6 +52,7 @@ export function MainLayout({
   onInputChange,
   originalText,
   resultText,
+  favoriteReuseHints = [],
   learningLanguageLabel,
   isLoading = false,
   error,
@@ -171,6 +175,18 @@ export function MainLayout({
                   <p className="mt-1 text-xs text-foreground/52">
                     {t("main.resultDescription")}
                   </p>
+                  {favoriteReuseHints.length > 0 && (
+                    <p className="mt-2 flex flex-wrap items-center gap-1.5 text-xs leading-5 text-accent">
+                      <Star className="h-3.5 w-3.5 fill-current" />
+                      <span>
+                        {t("main.favoriteReuseHint", {
+                          items: favoriteReuseHints
+                            .map((hint) => hint.expression)
+                            .join(", "),
+                        })}
+                      </span>
+                    </p>
+                  )}
                 </div>
                 {resultText && (
                   <CopyButton

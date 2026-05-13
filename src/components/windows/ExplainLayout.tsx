@@ -12,6 +12,7 @@ interface ExplainLayoutProps {
   onAlwaysOnTopToggle?: () => void;
   onPolishClick?: () => void;
   onSettingsClick?: () => void;
+  onResultCopied?: () => void;
   className?: string;
 }
 
@@ -23,6 +24,7 @@ export function ExplainLayout({
   onAlwaysOnTopToggle,
   onPolishClick,
   onSettingsClick,
+  onResultCopied,
   className,
 }: ExplainLayoutProps) {
   const { t } = useI18n();
@@ -88,6 +90,7 @@ export function ExplainLayout({
           <CopyButton
             text={`${result.original}\n\n${result.meaning}`}
             variant="ghost"
+            onCopied={onResultCopied}
             className="h-9 w-9 text-foreground/54 hover:text-foreground"
           />
         </div>

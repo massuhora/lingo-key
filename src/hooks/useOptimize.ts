@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import type { OutputMode } from '../types';
+import type { FavoriteReuseHint, OutputMode } from '../types';
 import { optimizeText } from '../lib/tauri';
 
 const DEBOUNCE_MS = 600;
@@ -26,6 +26,7 @@ export function useOptimize(
   mode: OutputMode,
   nativeLanguage: string,
   learningLanguage: string,
+  reuseHints: FavoriteReuseHint[] = [],
 ): UseOptimizeReturn {
   const [result, setResult] = useState('');
   const [loading, setLoading] = useState(false);
@@ -46,7 +47,7 @@ export function useOptimize(
     setError(null);
 
     try {
-      const optimized = await optimizeText(text, mode);
+      const optimized = await optimizeText(text, mode, reuseHints);
       if (isMounted.current) {
         setResult(optimized);
         setError(null);
@@ -63,7 +64,7 @@ export function useOptimize(
         setLoading(false);
       }
     }
-  }, [mode]);
+  }, [mode, reuseHints]);
 
   useEffect(() => {
     isMounted.current = true;

@@ -20,6 +20,13 @@ pub struct ExplainResult {
     pub context: String,
 }
 
+#[derive(Deserialize, Debug)]
+pub struct FavoriteReuseHint {
+    pub expression: String,
+    pub meaning: String,
+    pub context: Option<String>,
+}
+
 #[derive(Serialize, Debug)]
 struct ChatMessage {
     role: String,
@@ -91,6 +98,7 @@ fn build_optimize_prompt(
     mode: &str,
     native_language: &str,
     learning_language: &str,
+    reuse_hints: &[FavoriteReuseHint],
 ) -> Vec<ChatMessage> {
     let mode_instruction = if mode == "conservative" {
         "Keep changes minimal. Fix grammar, spelling, and unnatural phrasing. Do NOT add technical requirements beyond what the user explicitly stated."
@@ -100,6 +108,40 @@ fn build_optimize_prompt(
     let native_language = language_name(native_language);
     let learning_language = language_name(learning_language);
 
+    let reuse_instruction = if reuse_hints.is_empty() {
+        String::new()
+    } else {
+        let hints = reuse_hints
+            .iter()
+            .take(3)
+            .enumerate()
+            .map(|(index, hint)| {
+                let context = hint
+                    .context
+                    .as_deref()
+                    .filter(|value| !value.trim().is_empty())
+                    .map(|value| format!("\n   Context: {}", value.trim()))
+                    .unwrap_or_default();
+
+                format!(
+                    "{}. Favorite expression: {}\n   User meaning/source: {}{}",
+                    index + 1,
+                    hint.expression.trim(),
+                    hint.meaning.trim(),
+                    context
+                )
+            })
+            .collect::<Vec<_>>()
+            .join("\n");
+
+        format!(
+            "\n\nThe user has favorited these past expressions. Treat them as personal phrasing preferences, not mandatory text.\n\
+            Reuse a favorite expression only when it naturally matches the user's current intent; otherwise ignore it.\n\
+            If you reuse one, integrate it into the rewritten prompt without mentioning the favorite history.\n{}",
+            hints
+        )
+    };
+
     let system = format!(
         "You are LingoKey, an AI assistant for developers who work with AI coding tools like Codex, Claude Code, and Cursor.\n\
         The user's native language is {}.\n\
@@ -107,9 +149,10 @@ fn build_optimize_prompt(
         Your task is to rewrite the user's input into natural, accurate {} that can be sent directly as a prompt.\n\
         The input may be in the native language, the learning language, or a mixture of both. Preserve the full intent and normalize the final result entirely in {}.\n\n\
         Mode: {}\n\
-        {}\n\n\
+        {}{}\
+        \n\n\
         Only return the rewritten text. Do not add quotes, explanations, or markdown formatting.",
-        native_language, learning_language, learning_language, learning_language, mode, mode_instruction
+        native_language, learning_language, learning_language, learning_language, mode, mode_instruction, reuse_instruction
     );
 
     vec![
@@ -216,6 +259,7 @@ pub async fn optimize_text(
     state: tauri::State<'_, AppState>,
     text: String,
     mode: String,
+    reuse_hints: Option<Vec<FavoriteReuseHint>>,
 ) -> Result<String, String> {
     let settings = {
         let settings = state.settings.lock().map_err(|e| e.to_string())?;
@@ -227,6 +271,7 @@ pub async fn optimize_text(
         &mode,
         &settings.native_language,
         &settings.learning_language,
+        reuse_hints.as_deref().unwrap_or(&[]),
     );
     match call_llm(&settings.ai_provider, messages, false, &settings.locale).await {
         Ok(result) => Ok(result),

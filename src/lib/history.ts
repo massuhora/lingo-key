@@ -1,9 +1,10 @@
-import type { HistoryItem, HistoryKind } from '../types';
+import type { FavoriteReuseHint, HistoryItem, HistoryKind } from '../types';
 
 const STORE_FILE = 'history.json';
 const STORE_KEY = 'items';
 const LOCAL_STORAGE_KEY = 'lingokey.history.items';
 const MAX_HISTORY_ITEMS = 80;
+const MAX_REUSE_HINTS = 3;
 
 type StoreLike = {
   get<T>(key: string): Promise<T | undefined>;
@@ -145,4 +146,81 @@ export function toggleHistoryFavorite(items: HistoryItem[], id: string): History
 
 export function removeHistoryItem(items: HistoryItem[], id: string): HistoryItem[] {
   return normalizeItems(items.filter((item) => item.id !== id));
+}
+
+function normalizeForMatching(value: string): string {
+  return value
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}]+/gu, ' ')
+    .trim();
+}
+
+function tokenize(value: string): Set<string> {
+  const normalized = normalizeForMatching(value);
+  const tokens = new Set<string>();
+
+  for (const token of normalized.split(/\s+/).filter(Boolean)) {
+    if (/^[\p{Script=Han}]+$/u.test(token)) {
+      for (const char of token) {
+        tokens.add(char);
+      }
+
+      for (let i = 0; i < token.length - 1; i += 1) {
+        tokens.add(token.slice(i, i + 2));
+      }
+    } else if (token.length >= 3) {
+      tokens.add(token);
+    }
+  }
+
+  return tokens;
+}
+
+function createFavoriteHint(item: HistoryItem, score: number): FavoriteReuseHint {
+  return {
+    id: item.id,
+    kind: item.kind,
+    expression: item.output,
+    meaning: item.input,
+    context: item.context,
+    score,
+  };
+}
+
+function scoreFavorite(item: HistoryItem, inputTokens: Set<string>, normalizedInput: string): number {
+  const haystack = normalizeForMatching(`${item.input} ${item.output} ${item.context ?? ''}`);
+  const favoriteTokens = tokenize(haystack);
+  let score = 0;
+
+  for (const token of inputTokens) {
+    if (favoriteTokens.has(token)) {
+      score += token.length > 1 ? 2 : 1;
+    }
+  }
+
+  const expression = normalizeForMatching(item.kind === 'explain' ? item.input : item.output);
+  if (expression && normalizedInput.includes(expression)) {
+    score += 6;
+  }
+
+  return score;
+}
+
+export function getFavoriteReuseHints(
+  items: HistoryItem[],
+  input: string,
+  limit = MAX_REUSE_HINTS,
+): FavoriteReuseHint[] {
+  const normalizedInput = normalizeForMatching(input);
+  if (!normalizedInput) return [];
+
+  const inputTokens = tokenize(input);
+  if (inputTokens.size === 0) return [];
+
+  return items
+    .filter((item) => item.favorite && item.kind === 'optimize')
+    .map((item) => createFavoriteHint(item, scoreFavorite(item, inputTokens, normalizedInput)))
+    .filter((hint) => hint.score >= 2)
+    .sort((a, b) => b.score - a.score || b.expression.length - a.expression.length)
+    .slice(0, limit);
 }

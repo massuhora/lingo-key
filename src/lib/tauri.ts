@@ -2,7 +2,7 @@ import { invoke } from '@tauri-apps/api/core';
 import { listen, type Event, type UnlistenFn } from '@tauri-apps/api/event';
 import { readText, writeText } from '@tauri-apps/plugin-clipboard-manager';
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
-import type { Settings, ExplainResult } from '../types';
+import type { FavoriteReuseHint, Settings, ExplainResult } from '../types';
 
 export type OpenView = 'optimize' | 'explain' | 'settings';
 
@@ -98,9 +98,13 @@ export async function writeClipboard(text: string): Promise<boolean> {
   }
 }
 
-export async function optimizeText(text: string, mode: string): Promise<string> {
+export async function optimizeText(
+  text: string,
+  mode: string,
+  reuseHints: FavoriteReuseHint[] = [],
+): Promise<string> {
   try {
-    return await invoke<string>('optimize_text', { text, mode });
+    return await invoke<string>('optimize_text', { text, mode, reuseHints });
   } catch (error) {
     console.error('Failed to optimize text:', error);
     throw error;

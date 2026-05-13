@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { HistoryItem } from '../types';
 import {
+  getFavoriteReuseHints,
   removeHistoryItem,
   toggleHistoryFavorite,
   upsertHistoryItem,
@@ -58,5 +59,49 @@ describe('history helpers', () => {
 
     const removed = removeHistoryItem(toggled, 'first');
     expect(removed.map((entry) => entry.id)).toEqual(['second']);
+  });
+
+  it('suggests matching favorite expressions for reuse', () => {
+    const hints = getFavoriteReuseHints(
+      [
+        item({
+          id: 'flaky',
+          input: '这个测试有时候通过有时候失败，很不稳定',
+          output: 'This test is flaky.',
+          favorite: true,
+        }),
+        item({
+          id: 'ignored',
+          input: '更新文档',
+          output: 'Update the docs.',
+          favorite: false,
+        }),
+      ],
+      '这个测试有时候通过有时候失败，很不稳定',
+    );
+
+    expect(hints).toHaveLength(1);
+    expect(hints[0]).toMatchObject({
+      id: 'flaky',
+      expression: 'This test is flaky.',
+      meaning: '这个测试有时候通过有时候失败，很不稳定',
+    });
+  });
+
+  it('does not surface original text from explanation favorites as reusable polish text', () => {
+    const hints = getFavoriteReuseHints(
+      [
+        item({
+          id: 'explain-source',
+          kind: 'explain',
+          input: 'this are wrong',
+          output: '这句话有语法问题',
+          favorite: true,
+        }),
+      ],
+      '这句话有语法问题',
+    );
+
+    expect(hints).toEqual([]);
   });
 });

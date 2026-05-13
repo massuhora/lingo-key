@@ -20,6 +20,7 @@ import {
 } from '../lib/tauri';
 import { getLanguageLabel, I18nProvider, translate } from '../lib/i18n';
 import { toAppSettings, toSettings } from '../lib/settings';
+import { getFavoriteReuseHints } from '../lib/history';
 import type { AppSettings, ExplainResult, HistoryItem } from '../types';
 
 type ActiveView = 'optimize' | 'explain' | 'settings' | 'history';
@@ -28,18 +29,6 @@ export default function MainWindow() {
   const { settings, updateSettings, loading: settingsLoading } = useSettings();
   const [activeView, setActiveView] = useState<ActiveView>('optimize');
   const [input, setInput] = useState('');
-  const { result, loading, error, retry } = useOptimize(
-    input,
-    settings.outputMode,
-    settings.nativeLanguage,
-    settings.learningLanguage,
-  );
-  const {
-    result: explainResult,
-    loading: explainLoading,
-    error: explainError,
-    run: runExplain,
-  } = useExplain(settings.nativeLanguage, settings.learningLanguage, settings.locale);
   const {
     items: historyItems,
     loading: historyLoading,
@@ -47,6 +36,23 @@ export default function MainWindow() {
     toggleFavorite: toggleHistoryFavorite,
     removeItem: removeHistoryItem,
   } = useHistory();
+  const favoriteReuseHints = useMemo(
+    () => getFavoriteReuseHints(historyItems, input),
+    [historyItems, input],
+  );
+  const { result, loading, error, retry } = useOptimize(
+    input,
+    settings.outputMode,
+    settings.nativeLanguage,
+    settings.learningLanguage,
+    favoriteReuseHints,
+  );
+  const {
+    result: explainResult,
+    loading: explainLoading,
+    error: explainError,
+    run: runExplain,
+  } = useExplain(settings.nativeLanguage, settings.learningLanguage, settings.locale);
   const { write } = useClipboard();
   const [originalExplainText, setOriginalExplainText] = useState('');
   const persistedAppSettings = useMemo(() => toAppSettings(settings), [settings]);
@@ -54,6 +60,7 @@ export default function MainWindow() {
   const isDraggingRef = useRef(false);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const lastSavedOptimizeRef = useRef('');
+  const lastSavedExplainRef = useRef('');
   const saveNextOptimizeResultRef = useRef(false);
   const learningLanguageLabel = getLanguageLabel(settings.locale, settings.learningLanguage);
   const nativeLanguageLabel = getLanguageLabel(settings.locale, settings.nativeLanguage);
@@ -132,8 +139,11 @@ export default function MainWindow() {
       kind: 'optimize',
       input: trimmedInput,
       output: trimmedResult,
+      context: favoriteReuseHints.length > 0
+        ? `Favorites: ${favoriteReuseHints.map((hint) => hint.expression).join(', ')}`
+        : undefined,
     });
-  }, [addHistoryItem, input, result]);
+  }, [addHistoryItem, favoriteReuseHints, input, result]);
 
   const handleCopyResult = useCallback(async () => {
     if (result) {
@@ -270,6 +280,32 @@ export default function MainWindow() {
     context: '',
   };
 
+  const saveExplainToHistory = useCallback(() => {
+    const original = displayExplainResult.original.trim();
+    const meaning = displayExplainResult.meaning.trim();
+    const context = displayExplainResult.context.trim();
+    const signature = `${original}\n---\n${meaning}`;
+
+    if (!hasExplainText || explainLoading || !original || !meaning || signature === lastSavedExplainRef.current) {
+      return;
+    }
+
+    lastSavedExplainRef.current = signature;
+    addHistoryItem({
+      kind: 'explain',
+      input: original,
+      output: meaning,
+      context: context || undefined,
+    });
+  }, [
+    addHistoryItem,
+    displayExplainResult.context,
+    displayExplainResult.meaning,
+    displayExplainResult.original,
+    explainLoading,
+    hasExplainText,
+  ]);
+
   return (
     <I18nProvider locale={appearanceSettings.locale}>
       {activeView === 'settings' ? (
@@ -302,6 +338,7 @@ export default function MainWindow() {
           onAlwaysOnTopToggle={handleAlwaysOnTopToggle}
           onPolishClick={openOptimize}
           onSettingsClick={openSettings}
+          onResultCopied={saveExplainToHistory}
         />
       ) : (
         <MainLayout
@@ -310,6 +347,7 @@ export default function MainWindow() {
           onInputChange={setInput}
           originalText={input}
           resultText={result}
+          favoriteReuseHints={favoriteReuseHints}
           learningLanguageLabel={learningLanguageLabel}
           isLoading={loading || settingsLoading}
           error={error}
