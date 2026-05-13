@@ -48,7 +48,25 @@ fn default_base_url() -> String {
 }
 
 fn default_model() -> String {
-    "deepseek-chat".to_string()
+    "deepseek-v4-flash".to_string()
+}
+
+fn normalize_ai_model(base_url: &str, model: &str) -> String {
+    let model = model.trim();
+    if model.is_empty() {
+        return default_model();
+    }
+
+    if base_url
+        .trim()
+        .to_ascii_lowercase()
+        .contains("api.deepseek.com")
+        && model == "deepseek-chat"
+    {
+        return default_model();
+    }
+
+    model.to_string()
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, Default)]
@@ -178,9 +196,8 @@ impl AppSettings {
         if self.ai_provider.base_url.trim().is_empty() {
             self.ai_provider.base_url = default_base_url();
         }
-        if self.ai_provider.model.trim().is_empty() {
-            self.ai_provider.model = default_model();
-        }
+        self.ai_provider.model =
+            normalize_ai_model(&self.ai_provider.base_url, &self.ai_provider.model);
     }
 }
 

@@ -229,7 +229,7 @@ pub struct AppState {
 ### API 调用
 
 `src-tauri/src/commands/api.rs` 封装了对 OpenAI-compatible Chat Completion API 的请求：
-- 默认服务商：`https://api.deepseek.com`，模型 `deepseek-chat`
+- 默认服务商：`https://api.deepseek.com`，模型 `deepseek-v4-flash`
 - 请求超时：30 秒
 - `explain_text` 使用 `json_object` 响应格式并要求返回指定 JSON 字段
 - 若 API 失败，前端 Hook 会回退到 `mockOptimize` / `mockExplain` 并显示错误提示

@@ -32,6 +32,8 @@ struct ChatCompletionRequest {
     messages: Vec<ChatMessage>,
     #[serde(skip_serializing_if = "Option::is_none")]
     response_format: Option<ResponseFormat>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    thinking: Option<ThinkingMode>,
     temperature: f32,
 }
 
@@ -39,6 +41,12 @@ struct ChatCompletionRequest {
 struct ResponseFormat {
     #[serde(rename = "type")]
     format_type: String,
+}
+
+#[derive(Serialize, Debug)]
+struct ThinkingMode {
+    #[serde(rename = "type")]
+    mode_type: String,
 }
 
 #[derive(Deserialize, Debug)]
@@ -67,6 +75,15 @@ fn language_name(language: &str) -> &str {
         "german" => "German",
         _ => "English",
     }
+}
+
+fn should_disable_deepseek_thinking(provider: &crate::commands::settings::AiProvider) -> bool {
+    provider
+        .base_url
+        .trim()
+        .to_ascii_lowercase()
+        .contains("api.deepseek.com")
+        && provider.model.trim() == "deepseek-v4-flash"
 }
 
 fn build_optimize_prompt(
@@ -149,8 +166,15 @@ async fn call_llm(
         model: provider.model.clone(),
         messages,
         response_format: None,
+        thinking: None,
         temperature: 0.3,
     };
+
+    if should_disable_deepseek_thinking(provider) {
+        request.thinking = Some(ThinkingMode {
+            mode_type: "disabled".to_string(),
+        });
+    }
 
     if json_mode {
         request.response_format = Some(ResponseFormat {

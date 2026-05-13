@@ -111,6 +111,28 @@ describe('mergeSettings', () => {
     expect(merged.nativeLanguage).toBe('korean');
     expect(merged.learningLanguage).toBe('english');
   });
+
+  it('migrates the legacy DeepSeek chat model to v4 flash', () => {
+    const merged = mergeSettings({
+      aiProvider: {
+        baseUrl: 'https://api.deepseek.com',
+        apiKey: '',
+        model: 'deepseek-chat',
+      },
+    });
+    expect(merged.aiProvider.model).toBe('deepseek-v4-flash');
+  });
+
+  it('keeps custom non-DeepSeek model names intact', () => {
+    const merged = mergeSettings({
+      aiProvider: {
+        baseUrl: 'https://example.test/v1',
+        apiKey: '',
+        model: 'deepseek-chat',
+      },
+    });
+    expect(merged.aiProvider.model).toBe('deepseek-chat');
+  });
 });
 
 describe('toAppSettings / toSettings round-trip', () => {

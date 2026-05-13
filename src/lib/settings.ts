@@ -22,7 +22,7 @@ export const LOCALE_VALUES: Locale[] = ['zh-CN', 'en-US'];
 export const DEFAULT_AI_PROVIDER = {
   baseUrl: 'https://api.deepseek.com',
   apiKey: '',
-  model: 'deepseek-chat',
+  model: 'deepseek-v4-flash',
 };
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -151,10 +151,30 @@ export function normalizeOpacity(opacity: number): number {
   return Math.max(0.3, Math.min(1.0, opacity));
 }
 
+function normalizeAiModel(baseUrl: string | undefined, model: string | undefined): string {
+  if (!model?.trim()) return DEFAULT_AI_PROVIDER.model;
+  const normalizedModel = model.trim();
+  const normalizedBaseUrl = baseUrl?.trim().toLowerCase() ?? '';
+
+  if (
+    normalizedBaseUrl.includes('api.deepseek.com') &&
+    normalizedModel === 'deepseek-chat'
+  ) {
+    return DEFAULT_AI_PROVIDER.model;
+  }
+
+  return normalizedModel;
+}
+
 export function mergeSettings(partial: Partial<Settings>): Settings {
   const legacy = partial as Partial<Settings> & LegacySettingsFields;
   const nativeLanguage = partial.nativeLanguage ?? legacy.sourceLanguage;
   const learningLanguage = partial.learningLanguage ?? legacy.targetLanguage;
+  const aiProvider = {
+    ...DEFAULT_SETTINGS.aiProvider,
+    ...(partial.aiProvider ?? {}),
+  };
+  aiProvider.model = normalizeAiModel(aiProvider.baseUrl, aiProvider.model);
 
   return {
     ...DEFAULT_SETTINGS,
@@ -171,10 +191,7 @@ export function mergeSettings(partial: Partial<Settings>): Settings {
     outputMode: normalizeOutputMode(partial.outputMode ?? DEFAULT_SETTINGS.outputMode),
     theme: normalizeTheme(partial.theme ?? DEFAULT_SETTINGS.theme),
     opacity: normalizeOpacity(partial.opacity ?? DEFAULT_SETTINGS.opacity),
-    aiProvider: {
-      ...DEFAULT_SETTINGS.aiProvider,
-      ...(partial.aiProvider ?? {}),
-    },
+    aiProvider,
     windowSizes: partial.windowSizes ?? {},
   };
 }

@@ -213,7 +213,7 @@ All hotkeys can be changed in the settings window.
 ### Default AI Provider
 
 - Base URL: `https://api.deepseek.com`
-- Model: `deepseek-chat`
+- Model: `deepseek-v4-flash`
 - API Key: empty by default and must be configured by the user
 
 ### Configurable Options
@@ -314,6 +314,7 @@ The backend sends requests through an OpenAI-compatible Chat Completions API, po
 
 - Optimization: rewrite Chinese or mixed-language input into a more natural English prompt
 - Explanation: return structured JSON for rendering the lightweight explanation window
+- DeepSeek `deepseek-v4-flash` requests explicitly use non-thinking mode to preserve the previous `deepseek-chat` behavior and keep responses fast
 
 When the API key is missing or the remote request fails, the frontend/backend provides degraded fallback behavior so the UI does not become completely unresponsive.
 
