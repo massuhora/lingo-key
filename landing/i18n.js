@@ -1,6 +1,6 @@
 /* ============================================
-   LingoKey Landing Page — i18n
-   Supports English (default) and Chinese
+   LingoKey Landing Page - i18n
+   Supports English (default) and Simplified Chinese
    ============================================ */
 
 const translations = {
@@ -8,101 +8,111 @@ const translations = {
     "nav.features": "Features",
     "nav.workflow": "Workflow",
     "nav.download": "Download",
-    "hero.eyebrow": "Desktop Assistant for AI Coding",
-    "hero.title1": "Compress Your",
-    "hero.title2": "English Workflow",
-    "hero.subtitle": "One hotkey to optimize prompts before writing. One hotkey to explain expressions after reading. LingoKey sits at the system level, reducing friction between you and AI coding assistants.",
-    "hero.ctaPrimary": "Download Free",
-    "hero.ctaSecondary": "See How It Works",
-    "hero.status": "Open Source · MIT License",
-    "features.eyebrow": "Core Features",
-    "features.title": "Two Hotkeys. Zero Friction.",
-    "features.desc": "LingoKey is not a general translator or grammar checker. It is a workflow layer built specifically for developers who collaborate with AI coding assistants.",
-    "features.optimize.title": "Optimize Before Writing",
-    "features.optimize.desc": "Turn Chinese or mixed Chinese-English drafts into natural, accurate English prompts. Preserve your technical intent without over-engineering the prompt.",
-    "features.optimize.li1": "Conservative & Enhanced modes",
-    "features.optimize.li2": "Diff highlighting for changes",
-    "features.optimize.li3": "One-click copy to clipboard",
-    "features.explain.title": "Explain After Reading",
-    "features.explain.desc": "Select unfamiliar English expressions in any app and get a lightweight popup with Chinese meaning, technical context, and alternative phrasing.",
-    "features.explain.li1": "Chinese meaning + tech context",
-    "features.explain.li2": "Alternative expressions",
-    "features.explain.li3": "Appears near your cursor",
+    "hero.eyebrow": "Desktop assistant for AI coding",
+    "hero.title1": "Write clearer prompts.",
+    "hero.title2": "Read AI output faster.",
+    "hero.subtitle": "LingoKey is a small system-level window for developers who think in Chinese, work with English AI coding tools, and want less copy-paste friction.",
+    "hero.ctaPrimary": "View Releases",
+    "hero.ctaSecondary": "See the Workflow",
+    "hero.status": "Open source under MIT license",
+    "features.eyebrow": "Current App Scope",
+    "features.title": "One compact window, four focused views.",
+    "features.desc": "The current 0.3.4 app keeps the product narrow: prompt polishing before you send, instant explanation after you read, settings that match your workflow, and local history for reuse.",
+    "features.optimize.title": "Prompt Polish",
+    "features.optimize.desc": "Turn Chinese or mixed-language drafts into direct, natural prompts for Codex, Claude Code, Cursor, or any AI coding assistant.",
+    "features.optimize.li1": "Conservative and enhanced rewrite modes",
+    "features.optimize.li2": "Diff highlighting for every change",
+    "features.optimize.li3": "Keyboard-first copy and quick submit",
+    "features.explain.title": "Instant Explain",
+    "features.explain.desc": "Select unfamiliar English from AI output and open a lightweight explanation with meaning, context, and alternate phrasing.",
+    "features.explain.li1": "Meaning in your native language",
+    "features.explain.li2": "Technical context instead of generic translation",
+    "features.explain.li3": "Hotkey trigger with clipboard fallback",
+    "features.history.title": "History and Reuse",
+    "features.history.desc": "Copied and confirmed results are saved locally so useful phrasing, explanations, and favorites stay close at hand.",
+    "features.history.li1": "Recent prompt polish and explain items",
+    "features.history.li2": "Favorites for expressions worth keeping",
+    "features.history.li3": "Local storage with no cloud sync",
     "workflow.eyebrow": "How It Works",
-    "workflow.title": "Shorter Path, Same Intent",
-    "workflow.step1.title": "Press the Main Hotkey",
-    "workflow.step1.desc": "A compact floating window appears. The input box is already focused. Just type your draft in Chinese or mixed English.",
-    "workflow.step2.title": "Get the Optimized Result",
-    "workflow.step2.desc": "LingoKey rewrites your input into natural English. Changes are highlighted so you can see exactly what was improved.",
-    "workflow.step3.title": "Copy and Continue",
-    "workflow.step3.desc": "Press Ctrl+C to copy the result, then paste it into Codex, Claude Code, Cursor, or any AI assistant you use.",
+    "workflow.title": "A shorter loop around AI coding.",
+    "workflow.step1.title": "Summon LingoKey",
+    "workflow.step1.desc": "Press the main hotkey. A compact always-on-top window opens with the input already focused.",
+    "workflow.step2.title": "Polish the Prompt",
+    "workflow.step2.desc": "Write in Chinese, English, or a mix. LingoKey rewrites it into your configured learning language while preserving technical intent.",
+    "workflow.step3.title": "Copy, Send, and Save",
+    "workflow.step3.desc": "Copy the result into your AI coding assistant. Confirmed results are added to local history for quick reuse.",
     "workflow.step4.title": "Explain on Demand",
-    "workflow.step4.desc": "Reading AI output and see an unfamiliar phrase? Select it and press the explain hotkey for instant context.",
-    "hotkeys.title": "Built for Keyboard-First Developers",
-    "hotkeys.desc": "Every action is reachable without leaving the keyboard. Customize all shortcuts in the settings window.",
-    "hotkeys.main": "Main Window",
-    "hotkeys.explain": "Explain Window",
+    "workflow.step4.desc": "When AI output contains an unfamiliar phrase, select it and press the explain hotkey for native-language context.",
+    "hotkeys.title": "Built for keyboard-first developers",
+    "hotkeys.desc": "Main, explain, and settings shortcuts are customizable. The app also supports theme, opacity, always-on-top, auto-start, language pair, and provider settings.",
+    "hotkeys.main": "Polish View",
+    "hotkeys.explain": "Explain View",
     "hotkeys.settings": "Settings",
     "download.eyebrow": "Get Started",
-    "download.title": "Ready to Compress Your Workflow?",
-    "download.desc": "LingoKey is open source and free. Download the latest release for Windows, macOS, or Linux. Bring your own API key and start using it in under a minute.",
-    "download.cta": "Download Latest Release",
+    "download.title": "Use your own AI provider.",
+    "download.desc": "LingoKey is open source and free. It works with OpenAI-compatible APIs, defaults to DeepSeek, and keeps your API key in local settings.",
+    "download.cta": "View Releases",
     "download.github": "View on GitHub",
-    "download.platforms": "Windows · macOS · Linux",
-    "footer.copy": "© 2026 LingoKey. Open source under MIT License.",
+    "download.platforms": "Windows / macOS / Linux builds via Tauri",
+    "footer.copy": "(c) 2026 LingoKey. Open source under MIT license.",
     "footer.github": "GitHub",
     "footer.docs": "Documentation",
     "footer.license": "License",
   },
   zh: {
     "nav.features": "功能",
-    "nav.workflow": "工作流",
+    "nav.workflow": "流程",
     "nav.download": "下载",
-    "hero.eyebrow": "面向 AI 编程的桌面助手",
-    "hero.title1": "压缩你的",
-    "hero.title2": "英语工作流",
-    "hero.subtitle": "一个热键在写前优化提示词，一个热键在读後解释表达。LingoKey 常驻系统层，减少你与 AI 编程助手之间的英语摩擦。",
-    "hero.ctaPrimary": "免费下载",
-    "hero.ctaSecondary": "了解工作原理",
-    "hero.status": "开源 · MIT 协议",
-    "features.eyebrow": "核心功能",
-    "features.title": "两个热键，零摩擦",
-    "features.desc": "LingoKey 不是通用翻译软件，也不是通用语法纠错工具。它是专为与 AI 编程助手协作的开发者打造的工作流层。",
-    "features.optimize.title": "写前优化",
-    "features.optimize.desc": "将中文或中英混合草稿整理成自然、准确的英文提示词。在不改变技术意图的前提下，让表达更顺畅。",
-    "features.optimize.li1": "保守纠错与增强表达两种模式",
-    "features.optimize.li2": "修改内容高亮对比",
-    "features.optimize.li3": "一键复制到剪贴板",
-    "features.explain.title": "读後解释",
-    "features.explain.desc": "在任意应用中选中陌生的英文表达，弹出轻量解释窗，提供中文释义、技术语境和替代表达。",
-    "features.explain.li1": "中文释义 + 技术语境",
-    "features.explain.li2": "提供替代表达",
-    "features.explain.li3": "在光标附近弹出",
-    "workflow.eyebrow": "工作原理",
-    "workflow.title": "更短的路径，不变的意图",
-    "workflow.step1.title": "按下主热键",
-    "workflow.step1.desc": "紧凑的悬浮窗即刻出现，输入框已自动聚焦。直接用中文或中英混合输入你的草稿即可。",
-    "workflow.step2.title": "获得优化结果",
-    "workflow.step2.desc": "LingoKey 将你的输入改写成自然的英文。修改部分会以高亮形式展示，改动一目了然。",
-    "workflow.step3.title": "复制并继续",
-    "workflow.step3.desc": "按 Ctrl+C 复制结果，然后粘贴到 Codex、Claude Code、Cursor 或任何你使用的 AI 助手中。",
-    "workflow.step4.title": "随时解释",
-    "workflow.step4.desc": "阅读 AI 输出时遇到不熟悉的短语？选中后按下解释热键，即刻获取语境说明。",
-    "hotkeys.title": "为键盘优先的开发者打造",
-    "hotkeys.desc": "所有操作都无需离开键盘即可完成。在设置窗口中自定义所有快捷键。",
-    "hotkeys.main": "主窗口",
-    "hotkeys.explain": "解释窗口",
+    "hero.eyebrow": "面向 AI 编程的桌面轻助手",
+    "hero.title1": "把 Prompt 写清楚。",
+    "hero.title2": "把 AI 输出读明白。",
+    "hero.subtitle": "LingoKey 是一个系统级小窗口，给中文思考、英文协作的开发者减少复制、翻译、改写和查词之间的来回切换。",
+    "hero.ctaPrimary": "查看版本",
+    "hero.ctaSecondary": "查看流程",
+    "hero.status": "MIT 协议开源",
+    "features.eyebrow": "当前应用范围",
+    "features.title": "一个轻窗口，四个专注视图。",
+    "features.desc": "当前 0.3.4 版本保持克制：发送前润色 prompt，阅读后解释表达，按自己的工作流调整设置，并用本地历史保存可复用内容。",
+    "features.optimize.title": "Prompt 润色",
+    "features.optimize.desc": "把中文或中英混合草稿整理成自然、直接、可发送给 Codex、Claude Code、Cursor 等 AI 编程助手的英文 prompt。",
+    "features.optimize.li1": "保守与增强两种改写模式",
+    "features.optimize.li2": "用 diff 高亮展示修改",
+    "features.optimize.li3": "键盘优先的复制与快速提交",
+    "features.explain.title": "即时解释",
+    "features.explain.desc": "在 AI 输出里选中陌生英文表达，用轻量解释视图查看中文释义、技术语境和替代表达。",
+    "features.explain.li1": "用你的母语给出释义",
+    "features.explain.li2": "偏技术语境，而不是泛泛翻译",
+    "features.explain.li3": "热键触发，并支持剪贴板兜底",
+    "features.history.title": "历史与复用",
+    "features.history.desc": "复制或确认过的结果会保存在本地，常用表达、解释和收藏可以随时找回。",
+    "features.history.li1": "保存最近的润色与解释记录",
+    "features.history.li2": "收藏值得保留的表达",
+    "features.history.li3": "本地存储，不做云同步",
+    "workflow.eyebrow": "使用方式",
+    "workflow.title": "缩短 AI 编程前后的语言回路。",
+    "workflow.step1.title": "唤起 LingoKey",
+    "workflow.step1.desc": "按下主热键，一个紧凑的置顶窗口会出现，输入框已经自动聚焦。",
+    "workflow.step2.title": "润色 Prompt",
+    "workflow.step2.desc": "可以输入中文、英文或中英混合内容。LingoKey 会按你配置的学习语言输出，并尽量保留技术意图。",
+    "workflow.step3.title": "复制、发送、保存",
+    "workflow.step3.desc": "把结果复制到你的 AI 编程助手里。确认过的结果会进入本地历史，方便下次复用。",
+    "workflow.step4.title": "按需解释",
+    "workflow.step4.desc": "读 AI 输出时遇到陌生表达，选中后按解释热键，就能看到母语语境说明。",
+    "hotkeys.title": "为键盘优先的开发者设计",
+    "hotkeys.desc": "主视图、解释视图、设置视图的快捷键都可以修改。应用还支持主题、不透明度、置顶、开机启动、语言组合和 AI 服务商配置。",
+    "hotkeys.main": "润色视图",
+    "hotkeys.explain": "解释视图",
     "hotkeys.settings": "设置",
     "download.eyebrow": "开始使用",
-    "download.title": "准备好压缩你的工作流了吗？",
-    "download.desc": "LingoKey 开源且免费。下载适用于 Windows、macOS 或 Linux 的最新版本。带上你的 API 密钥，一分钟内即可开始使用。",
-    "download.cta": "下载最新版本",
-    "download.github": "在 GitHub 上查看",
-    "download.platforms": "Windows · macOS · Linux",
-    "footer.copy": "© 2026 LingoKey。基于 MIT 协议开源。",
+    "download.title": "接入你自己的 AI 服务。",
+    "download.desc": "LingoKey 免费开源，支持 OpenAI-compatible API，默认使用 DeepSeek，API Key 只保存在本地设置里。",
+    "download.cta": "查看版本",
+    "download.github": "查看 GitHub",
+    "download.platforms": "通过 Tauri 构建 Windows / macOS / Linux 版本",
+    "footer.copy": "(c) 2026 LingoKey。基于 MIT 协议开源。",
     "footer.github": "GitHub",
     "footer.docs": "文档",
-    "footer.license": "许可协议",
+    "footer.license": "许可证",
   },
 };
 
@@ -118,21 +128,19 @@ function setLanguage(lang) {
   document.querySelectorAll("[data-i18n]").forEach((el) => {
     const key = el.getAttribute("data-i18n");
     const text = translations[lang][key];
-    if (text !== undefined) {
-      // If element has child SVG or other elements, preserve them and only update text nodes
-      if (el.querySelector("svg")) {
-        // Find direct text nodes or text-containing spans and update
-        const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, null, false);
-        let node;
-        while ((node = walker.nextNode())) {
-          if (node.textContent.trim().length > 0) {
-            node.textContent = text;
-            break;
-          }
+    if (text === undefined) return;
+
+    if (el.querySelector("svg")) {
+      const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+      let node;
+      while ((node = walker.nextNode())) {
+        if (node.textContent.trim().length > 0) {
+          node.textContent = text;
+          return;
         }
-      } else {
-        el.textContent = text;
       }
+    } else {
+      el.textContent = text;
     }
   });
 
@@ -146,7 +154,6 @@ function toggleLanguage() {
   setLanguage(currentLang === "en" ? "zh" : "en");
 }
 
-// Initialize on DOM ready
 document.addEventListener("DOMContentLoaded", () => {
   setLanguage(currentLang);
 });

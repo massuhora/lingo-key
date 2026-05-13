@@ -27,19 +27,20 @@ The problem is not a lack of tools. The problem is that this chain usually gets 
 
 ## Project Status
 
-The current version is `0.2.1`. The repository is still in the MVP stage. The core capabilities are already usable, but the main focus is still on polishing the experience, tightening the workflow, and validating product boundaries.
+The current version is `0.3.4`. The repository is still in the MVP stage. The core capabilities are already usable, but the main focus is still on polishing the experience, tightening the workflow, and validating product boundaries.
 
 The current scope mainly includes:
 
 - Prompt optimization before sending
 - Lightweight explanation after reading AI output
 - Global hotkey invocation
-- Multi-window desktop interaction
+- A unified desktop window with focused views for polish, explain, settings, and history
 - Custom AI provider, theme, and window preferences
+- Local history and favorites for quick reuse
 
 The first phase does not include:
 
-- History and cloud sync
+- Cloud sync
 - Deep IDE integration
 - OCR / screenshot translation
 - Full-document translation
@@ -95,10 +96,11 @@ If summarized in one sentence:
 
 ## Core Features
 
-- Global hotkeys to open the main window, explain window, and settings window
-- Multi-window desktop architecture designed around short interactions
+- Global hotkeys to open the polish view, explain view, and settings view
+- A compact desktop shell designed around short interactions
 - Diff highlighting for prompt optimization results so changes are easy to understand
-- Explain window appears near the mouse cursor to reduce visual switching cost
+- Explain view can be opened from selected text or the clipboard
+- Local history with favorites for prompt polish and explanation results
 - Supports both `conservative` and `enhanced` output modes
 - Supports custom `Base URL`, `Model`, and `API Key` for any AI provider
 - Supports theme switching, always-on-top, auto-start, and window opacity
@@ -129,13 +131,16 @@ You see an unfamiliar expression in an AI response. Select the text and press th
 
 ## Workflow Design
 
-LingoKey uses a three-window structure:
+LingoKey now uses a single Tauri window with four focused React views:
 
-| Window     | Purpose                         | Default Size |
-| ---------- | ------------------------------- | ------------ |
-| `main`     | Main prompt optimization window | `520 x 420`  |
-| `explain`  | Lightweight explanation popup   | `360 x 280`  |
-| `settings` | Settings window                 | `480 x 520`  |
+| View       | Purpose                                      |
+| ---------- | -------------------------------------------- |
+| `optimize` | Main prompt polish flow                      |
+| `explain`  | Lightweight explanation from selected text   |
+| `settings` | Hotkeys, languages, appearance, AI provider  |
+| `history`  | Recent items, favorites, and quick reuse     |
+
+The default desktop shell size is `560 x 640`, with saved window size preferences.
 
 The goal is not to become a large all-in-one workspace. The goal is to turn high-frequency actions into a low-interruption, short-dwell support layer that can be closed at any time.
 
@@ -240,8 +245,8 @@ npm run test:watch
 
 Development details:
 
-- Vite dev server runs on fixed port `1420`
-- The project uses multi-page entries: `/`, `/explain`, `/settings`
+- Vite dev server runs on fixed port `5173`
+- The project uses one React entry and switches between polish, explain, settings, and history views inside the Tauri shell
 - TypeScript runs in strict mode
 
 ## Testing
@@ -297,7 +302,7 @@ npm test
 
 - React function components + Hooks
 - Tailwind CSS + CSS variables for theme organization
-- Three independent HTML entries for the main, explain, and settings windows
+- A single React entry renders polish, explain, settings, and history views inside one Tauri window
 - `src/lib/tauri.ts` provides a unified frontend wrapper over Tauri commands
 
 ### Desktop Layer
@@ -339,7 +344,7 @@ Contributions around the following directions are especially welcome:
 
 - Terminology preference memory
 - Explanations of why wording changed
-- History and quick reuse
+- Search, export, or sync options for local history
 - Output presets for different AI tools
 - A richer technical-context terminology base
 - Better cross-platform selected-text retrieval
