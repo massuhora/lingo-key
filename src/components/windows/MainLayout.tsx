@@ -7,6 +7,7 @@ import {
   Pin,
   PinOff,
   BookOpen,
+  History,
 } from "lucide-react";
 import { useI18n } from "../../lib/i18n";
 import { cn } from "../../lib/utils";
@@ -34,7 +35,10 @@ interface MainLayoutProps {
   onAlwaysOnTopToggle?: () => void;
   onSettingsClick?: () => void;
   onExplainClick?: () => void;
+  onHistoryClick?: () => void;
   onSubmit?: () => void;
+  onShortcutSubmit?: () => void;
+  onResultCopied?: () => void;
   onDragStateChange?: (dragging: boolean) => void;
   className?: string;
 }
@@ -52,7 +56,10 @@ export function MainLayout({
   onAlwaysOnTopToggle,
   onSettingsClick,
   onExplainClick,
+  onHistoryClick,
   onSubmit,
+  onShortcutSubmit,
+  onResultCopied,
   onDragStateChange,
   className,
 }: MainLayoutProps) {
@@ -79,6 +86,17 @@ export function MainLayout({
               className="h-8 w-8 text-foreground/54 hover:text-foreground"
             >
               <BookOpen className="h-4 w-4" />
+            </Button>
+          </Tooltip>
+          <Tooltip content={t("history.title")}>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onHistoryClick}
+              aria-label={t("history.title")}
+              className="h-8 w-8 text-foreground/54 hover:text-foreground"
+            >
+              <History className="h-4 w-4" />
             </Button>
           </Tooltip>
           <Tooltip content={alwaysOnTop ? t("main.unpinWindow") : t("main.pinWindow")}>
@@ -136,7 +154,7 @@ export function MainLayout({
                 maxRows={4}
                 onKeyDown={(event) => {
                   if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) {
-                    onSubmit?.();
+                    onShortcutSubmit?.();
                   }
                 }}
               />
@@ -158,6 +176,7 @@ export function MainLayout({
                   <CopyButton
                     text={resultText}
                     variant="ghost"
+                    onCopied={onResultCopied}
                     className="h-9 w-9 text-foreground/54 hover:text-foreground"
                   />
                 )}

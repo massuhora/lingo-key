@@ -8,12 +8,14 @@ interface CopyButtonProps {
   text: string;
   className?: string;
   variant?: "primary" | "secondary" | "ghost";
+  onCopied?: () => void;
 }
 
 export function CopyButton({
   text,
   className,
   variant = "ghost",
+  onCopied,
 }: CopyButtonProps) {
   const { t } = useI18n();
   const [copied, setCopied] = useState(false);
@@ -27,8 +29,9 @@ export function CopyButton({
     }
 
     setCopied(true);
+    onCopied?.();
     setTimeout(() => setCopied(false), 1500);
-  }, [text]);
+  }, [onCopied, text]);
 
   return (
     <Button

@@ -2,12 +2,14 @@ import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { MainLayout } from '../components/windows/MainLayout';
 import { ExplainLayout } from '../components/windows/ExplainLayout';
 import { SettingsLayout } from '../components/windows/SettingsLayout';
+import { HistoryLayout } from '../components/windows/HistoryLayout';
 import { useOptimize } from '../hooks/useOptimize';
 import { useSettings } from '../hooks/useSettings';
 import { useClipboard } from '../hooks/useClipboard';
 import { useExplain } from '../hooks/useExplain';
 import { useWindow } from '../hooks/useWindow';
 import { useAppearance } from '../hooks/useAppearance';
+import { useHistory } from '../hooks/useHistory';
 import {
   hideCurrentWindow,
   listenClipboardText,
@@ -18,9 +20,9 @@ import {
 } from '../lib/tauri';
 import { getLanguageLabel, I18nProvider, translate } from '../lib/i18n';
 import { toAppSettings, toSettings } from '../lib/settings';
-import type { AppSettings, ExplainResult } from '../types';
+import type { AppSettings, ExplainResult, HistoryItem } from '../types';
 
-type ActiveView = 'optimize' | 'explain' | 'settings';
+type ActiveView = 'optimize' | 'explain' | 'settings' | 'history';
 
 export default function MainWindow() {
   const { settings, updateSettings, loading: settingsLoading } = useSettings();
@@ -38,12 +40,21 @@ export default function MainWindow() {
     error: explainError,
     run: runExplain,
   } = useExplain(settings.nativeLanguage, settings.learningLanguage, settings.locale);
+  const {
+    items: historyItems,
+    loading: historyLoading,
+    addItem: addHistoryItem,
+    toggleFavorite: toggleHistoryFavorite,
+    removeItem: removeHistoryItem,
+  } = useHistory();
   const { write } = useClipboard();
   const [originalExplainText, setOriginalExplainText] = useState('');
   const persistedAppSettings = useMemo(() => toAppSettings(settings), [settings]);
   const [draftSettings, setDraftSettings] = useState<AppSettings>(persistedAppSettings);
   const isDraggingRef = useRef(false);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const lastSavedOptimizeRef = useRef('');
+  const saveNextOptimizeResultRef = useRef(false);
   const learningLanguageLabel = getLanguageLabel(settings.locale, settings.learningLanguage);
   const nativeLanguageLabel = getLanguageLabel(settings.locale, settings.nativeLanguage);
   const hasSettingsChanges = useMemo(
@@ -83,6 +94,10 @@ export default function MainWindow() {
     setActiveView('settings');
   }, [settings]);
 
+  const openHistory = useCallback(() => {
+    setActiveView('history');
+  }, []);
+
   const openExplain = useCallback(async (text?: string) => {
     const nextText = text ?? await readClipboard();
     setOriginalExplainText(nextText);
@@ -93,16 +108,55 @@ export default function MainWindow() {
     }
   }, [runExplain]);
 
+  const handleUseHistoryItem = useCallback((item: HistoryItem) => {
+    if (item.kind === 'optimize') {
+      setInput(item.input);
+      setActiveView('optimize');
+      return;
+    }
+
+    void openExplain(item.input);
+  }, [openExplain]);
+
+  const saveOptimizeToHistory = useCallback(() => {
+    const trimmedInput = input.trim();
+    const trimmedResult = result.trim();
+    const signature = `${trimmedInput}\n---\n${trimmedResult}`;
+
+    if (!trimmedInput || !trimmedResult || signature === lastSavedOptimizeRef.current) {
+      return;
+    }
+
+    lastSavedOptimizeRef.current = signature;
+    addHistoryItem({
+      kind: 'optimize',
+      input: trimmedInput,
+      output: trimmedResult,
+    });
+  }, [addHistoryItem, input, result]);
+
   const handleCopyResult = useCallback(async () => {
     if (result) {
       await write(result);
+      saveOptimizeToHistory();
     }
-  }, [result, write]);
+  }, [result, saveOptimizeToHistory, write]);
+
+  const handlePolishClick = useCallback(() => {
+    if (result.trim()) {
+      saveOptimizeToHistory();
+      retry();
+      return;
+    }
+
+    saveNextOptimizeResultRef.current = true;
+    retry();
+  }, [result, retry, saveOptimizeToHistory]);
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'c') {
-        if (activeView === 'optimize' && result && window.getSelection()?.toString() === '') {
+        if (activeView === 'optimize' && result && !window.getSelection()?.toString()) {
           e.preventDefault();
           void handleCopyResult();
         }
@@ -166,6 +220,13 @@ export default function MainWindow() {
     return () => window.removeEventListener('focus', focusInput);
   }, [activeView]);
 
+  useEffect(() => {
+    if (!loading && saveNextOptimizeResultRef.current) {
+      saveNextOptimizeResultRef.current = false;
+      saveOptimizeToHistory();
+    }
+  }, [loading, saveOptimizeToHistory]);
+
   const handleAlwaysOnTopToggle = useCallback(() => {
     const alwaysOnTop = !settings.alwaysOnTop;
 
@@ -220,6 +281,18 @@ export default function MainWindow() {
           hasChanges={hasSettingsChanges}
           onBack={openOptimize}
         />
+      ) : activeView === 'history' ? (
+        <HistoryLayout
+          items={historyItems}
+          loading={historyLoading}
+          alwaysOnTop={settings.alwaysOnTop}
+          onAlwaysOnTopToggle={handleAlwaysOnTopToggle}
+          onBack={openOptimize}
+          onSettingsClick={openSettings}
+          onUseItem={handleUseHistoryItem}
+          onToggleFavorite={toggleHistoryFavorite}
+          onRemoveItem={removeHistoryItem}
+        />
       ) : activeView === 'explain' ? (
         <ExplainLayout
           result={displayExplainResult}
@@ -244,7 +317,10 @@ export default function MainWindow() {
           onAlwaysOnTopToggle={handleAlwaysOnTopToggle}
           onSettingsClick={openSettings}
           onExplainClick={() => void openExplain()}
-          onSubmit={retry}
+          onHistoryClick={openHistory}
+          onSubmit={handlePolishClick}
+          onShortcutSubmit={retry}
+          onResultCopied={saveOptimizeToHistory}
           onDragStateChange={handleDragStateChange}
         />
       )}

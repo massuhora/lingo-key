@@ -58,6 +58,18 @@ export interface ExplainResult {
   context: string;
 }
 
+export type HistoryKind = 'optimize' | 'explain';
+
+export interface HistoryItem {
+  id: string;
+  kind: HistoryKind;
+  input: string;
+  output: string;
+  context?: string;
+  createdAt: number;
+  favorite: boolean;
+}
+
 export interface DiffChunk {
   type: 'equal' | 'insert' | 'delete';
   value: string;
