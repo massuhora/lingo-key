@@ -74,8 +74,12 @@ export async function setWindowAlwaysOnTop(
 }
 
 export async function setCurrentWindowOpacity(opacity: number): Promise<boolean> {
-  const win = getCurrentWebviewWindow();
-  return setWindowOpacity(win.label, opacity);
+  try {
+    const win = getCurrentWebviewWindow();
+    return setWindowOpacity(win.label, opacity);
+  } catch {
+    return false;
+  }
 }
 
 export async function readClipboard(): Promise<string> {

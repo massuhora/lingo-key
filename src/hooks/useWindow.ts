@@ -31,7 +31,13 @@ export function useWindow(options: UseWindowOptions): void {
   }, [type, hideOnBlur, shouldHideOnBlur]);
 
   useEffect(() => {
-    const currentWindow = getCurrentWindow();
+    const currentWindow = (() => {
+      try {
+        return getCurrentWindow();
+      } catch {
+        return null;
+      }
+    })();
     let suppressBlur = false;
     let suppressBlurTimeout: number | undefined;
     let hideTimeout: number | undefined;
@@ -73,7 +79,9 @@ export function useWindow(options: UseWindowOptions): void {
 
       if (type === 'main' || type === 'explain') {
         try {
-          const focused = await currentWindow.isFocused();
+          const focused = currentWindow
+            ? await currentWindow.isFocused()
+            : document.hasFocus();
           if (!focused) {
             await hideCurrentWindow();
           }
@@ -126,30 +134,32 @@ export function useWindow(options: UseWindowOptions): void {
     window.addEventListener('blur', guardedBlur);
     window.addEventListener('mousedown', handleMouseDown, true);
 
-    Promise.all([
-      currentWindow.onFocusChanged(({ payload: focused }) => {
-        if (focused) {
-          nativeInteractionActive = false;
-          clearHideTimeout();
-          clearInteractionTimeout();
-          return;
-        }
+    if (currentWindow) {
+      Promise.all([
+        currentWindow.onFocusChanged(({ payload: focused }) => {
+          if (focused) {
+            nativeInteractionActive = false;
+            clearHideTimeout();
+            clearInteractionTimeout();
+            return;
+          }
 
-        scheduleNativeHideCheck(120);
-      }),
-      currentWindow.onResized(() => {
-        markNativeInteraction();
-      }),
-      currentWindow.onMoved(() => {
-        markNativeInteraction();
-      }),
-    ])
-      .then((listeners) => {
-        removeNativeListeners = listeners;
-      })
-      .catch(() => {
-        // Tauri window events are unavailable in browser preview.
-      });
+          scheduleNativeHideCheck(120);
+        }),
+        currentWindow.onResized(() => {
+          markNativeInteraction();
+        }),
+        currentWindow.onMoved(() => {
+          markNativeInteraction();
+        }),
+      ])
+        .then((listeners) => {
+          removeNativeListeners = listeners;
+        })
+        .catch(() => {
+          // Tauri window events are unavailable in browser preview.
+        });
+    }
 
     return () => {
       clearHideTimeout();

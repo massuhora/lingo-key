@@ -176,16 +176,21 @@ export function MainLayout({
                     {t("main.resultDescription")}
                   </p>
                   {favoriteReuseHints.length > 0 && (
-                    <p className="mt-2 flex flex-wrap items-center gap-1.5 text-xs leading-5 text-accent">
-                      <Star className="h-3.5 w-3.5 fill-current" />
-                      <span>
-                        {t("main.favoriteReuseHint", {
-                          items: favoriteReuseHints
-                            .map((hint) => hint.expression)
-                            .join(", "),
-                        })}
+                    <div className="mt-2 flex flex-wrap items-center gap-1.5 text-xs leading-5 text-accent">
+                      <span className="inline-flex items-center gap-1 font-medium">
+                        <Star className="h-3.5 w-3.5 fill-current" />
+                        {t("main.favoriteReuseLabel")}
                       </span>
-                    </p>
+                      {favoriteReuseHints.map((hint) => (
+                        <span
+                          key={hint.id}
+                          className="max-w-[180px] truncate rounded-full border border-accent/20 bg-accent/8 px-2 py-0.5 font-mono text-[11px] text-accent"
+                          title={hint.expression}
+                        >
+                          {hint.expression}
+                        </span>
+                      ))}
+                    </div>
                   )}
                 </div>
                 {resultText && (

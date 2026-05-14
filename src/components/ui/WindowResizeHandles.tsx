@@ -59,7 +59,13 @@ export function WindowResizeHandles({
   className,
   onResizeStateChange,
 }: WindowResizeHandlesProps) {
-  const windowApi = useMemo(() => getCurrentWebviewWindow(), []);
+  const windowApi = useMemo(() => {
+    try {
+      return getCurrentWebviewWindow();
+    } catch {
+      return null;
+    }
+  }, []);
 
   const handleResizeStart = (direction: ResizeDirection) => async (
     event: MouseEvent<HTMLDivElement>,
@@ -70,7 +76,7 @@ export function WindowResizeHandles({
     onResizeStateChange?.(true);
 
     try {
-      await windowApi.startResizeDragging(direction);
+      await windowApi?.startResizeDragging(direction);
     } catch {
       // Tauri may be unavailable in browser preview.
     } finally {

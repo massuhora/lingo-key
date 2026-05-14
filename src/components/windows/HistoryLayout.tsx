@@ -1,21 +1,24 @@
 import { useMemo, useState } from "react";
 import {
   ArrowLeft,
+  ArrowUpRight,
   BookOpen,
   History,
   Pin,
   PinOff,
+  Search,
   Settings,
   Sparkles,
   Star,
   Trash2,
+  X,
 } from "lucide-react";
 import { useI18n } from "../../lib/i18n";
 import { cn } from "../../lib/utils";
 import type { HistoryItem } from "../../types";
 import { Button, CopyButton, TitleBar, Tooltip, WindowResizeHandles } from "../ui";
 
-type HistoryFilter = "all" | "favorites";
+type HistoryFilter = "all" | "optimize" | "favorites";
 
 interface HistoryLayoutProps {
   items: HistoryItem[];
@@ -53,13 +56,30 @@ export function HistoryLayout({
 }: HistoryLayoutProps) {
   const { locale, t } = useI18n();
   const [filter, setFilter] = useState<HistoryFilter>("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const normalizedSearch = searchQuery.trim().toLowerCase();
   const favoriteCount = useMemo(
     () => items.filter((item) => item.favorite).length,
     [items],
   );
-  const visibleItems = filter === "favorites"
-    ? items.filter((item) => item.favorite)
-    : items;
+  const optimizeCount = useMemo(
+    () => items.filter((item) => item.kind === "optimize").length,
+    [items],
+  );
+  const visibleItems = useMemo(() => {
+    const filteredItems = items.filter((item) => {
+      if (filter === "favorites" && !item.favorite) return false;
+      if (filter === "optimize" && item.kind !== "optimize") return false;
+      if (!normalizedSearch) return true;
+
+      return `${item.input} ${item.output} ${item.context ?? ""}`
+        .toLowerCase()
+        .includes(normalizedSearch);
+    });
+
+    return filteredItems;
+  }, [filter, items, normalizedSearch]);
+  const hasSearch = normalizedSearch.length > 0;
 
   return (
     <div className={cn("window-shell", className)}>
@@ -114,34 +134,81 @@ export function HistoryLayout({
       </TitleBar>
 
       <div className="flex min-h-0 flex-1 flex-col gap-3 px-4 pb-4 pt-4">
-        <div className="panel-surface flex items-center justify-between gap-3 px-4 py-3">
-          <div className="flex min-w-0 flex-col">
-            <h2 className="text-sm font-semibold text-foreground">{t("history.heading")}</h2>
-            <p className="mt-1 text-xs leading-5 text-foreground/52">
-              {t("history.description")}
-            </p>
+        <div className="panel-surface flex flex-col gap-3 px-4 py-3">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex min-w-0 flex-col">
+              <h2 className="text-sm font-semibold text-foreground">{t("history.heading")}</h2>
+              <p className="mt-1 text-xs leading-5 text-foreground/52">
+                {t("history.description")}
+              </p>
+            </div>
+            <div className="flex shrink-0 items-center gap-2 text-[11px] text-foreground/52">
+              <span className="status-chip">{t("history.totalCount", { count: items.length })}</span>
+              <span className="status-chip border-accent/22 text-accent">
+                <Star className="h-3.5 w-3.5 fill-current" />
+                {favoriteCount}
+              </span>
+            </div>
           </div>
-          <div className="flex shrink-0 items-center gap-2 rounded-xl border border-border/60 bg-primary/70 p-1">
-            <Button
-              variant={filter === "all" ? "secondary" : "ghost"}
-              size="sm"
-              onClick={() => setFilter("all")}
-              aria-pressed={filter === "all"}
-              className="h-8 px-3 text-xs"
-            >
-              <History className="h-3.5 w-3.5" />
-              {t("history.all")}
-            </Button>
-            <Button
-              variant={filter === "favorites" ? "secondary" : "ghost"}
-              size="sm"
-              onClick={() => setFilter("favorites")}
-              aria-pressed={filter === "favorites"}
-              className="h-8 px-3 text-xs"
-            >
-              <Star className="h-3.5 w-3.5" />
-              {favoriteCount}
-            </Button>
+
+          <div className="grid gap-2">
+            <div className="relative">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground/38" />
+              <input
+                value={searchQuery}
+                onChange={(event) => setSearchQuery(event.target.value)}
+                placeholder={t("history.searchPlaceholder")}
+                aria-label={t("history.searchPlaceholder")}
+                className="h-10 w-full rounded-xl border border-border/60 bg-primary/72 pl-9 pr-10 text-sm text-foreground transition-colors placeholder:text-foreground/36 hover:border-border-strong/65 focus-visible:border-accent focus-visible:bg-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/22"
+              />
+              {searchQuery && (
+                <Tooltip content={t("history.clearSearch")}>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setSearchQuery("")}
+                    aria-label={t("history.clearSearch")}
+                    className="absolute right-1 top-1 h-8 w-8 text-foreground/46 hover:text-foreground"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </Tooltip>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2 rounded-xl border border-border/60 bg-primary/70 p-1">
+              <Button
+                variant={filter === "all" ? "secondary" : "ghost"}
+                size="sm"
+                onClick={() => setFilter("all")}
+                aria-pressed={filter === "all"}
+                className="h-8 flex-1 px-3 text-xs"
+              >
+                <History className="h-3.5 w-3.5" />
+                {t("history.all")}
+              </Button>
+              <Button
+                variant={filter === "optimize" ? "secondary" : "ghost"}
+                size="sm"
+                onClick={() => setFilter("optimize")}
+                aria-pressed={filter === "optimize"}
+                className="h-8 flex-1 px-3 text-xs"
+              >
+                <Sparkles className="h-3.5 w-3.5" />
+                {t("history.polishFilter", { count: optimizeCount })}
+              </Button>
+              <Button
+                variant={filter === "favorites" ? "secondary" : "ghost"}
+                size="sm"
+                onClick={() => setFilter("favorites")}
+                aria-pressed={filter === "favorites"}
+                className="h-8 flex-1 px-3 text-xs"
+              >
+                <Star className="h-3.5 w-3.5" />
+                {t("history.starredFilter", { count: favoriteCount })}
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -159,7 +226,10 @@ export function HistoryLayout({
                   <article key={item.id} className="panel-surface flex flex-col gap-3 p-4">
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex min-w-0 items-center gap-2">
-                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-accent/18 bg-accent/10 text-accent">
+                        <span className={cn(
+                          "flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-accent/18 bg-accent/10 text-accent",
+                          item.favorite && "border-accent/34 bg-accent/14",
+                        )}>
                           {isOptimize ? (
                             <Sparkles className="h-4 w-4" />
                           ) : (
@@ -174,6 +244,12 @@ export function HistoryLayout({
                             {formatTimestamp(item.createdAt, locale)}
                           </p>
                         </div>
+                        {item.favorite && (
+                          <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-accent/24 bg-accent/10 px-2 py-1 text-[11px] font-medium text-accent">
+                            <Star className="h-3 w-3 fill-current" />
+                            {t("history.savedBadge")}
+                          </span>
+                        )}
                       </div>
                       <div className="flex shrink-0 items-center gap-1">
                         <Tooltip content={item.favorite ? t("history.unfavorite") : t("history.favorite")}>
@@ -210,26 +286,46 @@ export function HistoryLayout({
                       </div>
                     </div>
 
-                    <button
-                      type="button"
-                      onClick={() => onUseItem?.(item)}
-                      className="group rounded-xl border border-border/50 bg-primary/64 px-3 py-3 text-left transition-colors hover:border-border-strong/70 hover:bg-primary/86 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50"
-                    >
-                      <span className="eyebrow-label">{t("history.source")}</span>
-                      <span className="mt-1 block max-h-16 overflow-hidden text-xs leading-5 text-foreground/62">
-                        {item.input}
-                      </span>
+                    <div className="rounded-xl border border-border/50 bg-primary/64 px-3 py-3">
+                      <div className="flex items-start justify-between gap-3">
+                        <button
+                          type="button"
+                          onClick={() => onUseItem?.(item)}
+                          className="group min-w-0 flex-1 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50"
+                        >
+                          <span className="eyebrow-label">{isOptimize ? t("history.result") : t("history.meaning")}</span>
+                          <span className="mt-1 block max-h-20 overflow-hidden text-sm leading-6 text-foreground transition-colors group-hover:text-accent">
+                            {item.output}
+                          </span>
+                        </button>
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => onUseItem?.(item)}
+                          className="h-8 shrink-0 px-2.5 text-xs"
+                        >
+                          {t("history.useItem")}
+                          <ArrowUpRight className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+
                       <span className="subtle-divider my-3 block" />
-                      <span className="eyebrow-label">{isOptimize ? t("history.result") : t("history.meaning")}</span>
-                      <span className="mt-1 block max-h-20 overflow-hidden text-sm leading-6 text-foreground group-hover:text-foreground">
-                        {item.output}
+                      <span className="eyebrow-label">{t("history.source")}</span>
+                      <span className="mt-1 block max-h-14 overflow-hidden text-xs leading-5 text-foreground/62">
+                        {item.input}
                       </span>
                       {item.context && (
                         <span className="mt-2 block max-h-10 overflow-hidden text-xs leading-5 text-foreground/46">
                           {item.context}
                         </span>
                       )}
-                    </button>
+                      {item.favorite && isOptimize && (
+                        <span className="mt-3 inline-flex rounded-full border border-accent/18 bg-accent/8 px-2.5 py-1 text-[11px] font-medium text-accent">
+                          {t("history.favoriteReuseNote")}
+                        </span>
+                      )}
+                    </div>
                   </article>
                 );
               })}
@@ -239,10 +335,18 @@ export function HistoryLayout({
               <History className="h-8 w-8" />
               <div>
                 <p className="text-sm font-medium text-foreground/58">
-                  {filter === "favorites" ? t("history.emptyFavoritesTitle") : t("history.emptyTitle")}
+                  {hasSearch
+                    ? t("history.emptySearchTitle")
+                    : filter === "favorites"
+                      ? t("history.emptyFavoritesTitle")
+                      : t("history.emptyTitle")}
                 </p>
                 <p className="mt-1 text-xs leading-5">
-                  {filter === "favorites" ? t("history.emptyFavoritesDescription") : t("history.emptyDescription")}
+                  {hasSearch
+                    ? t("history.emptySearchDescription")
+                    : filter === "favorites"
+                      ? t("history.emptyFavoritesDescription")
+                      : t("history.emptyDescription")}
                 </p>
               </div>
             </div>
