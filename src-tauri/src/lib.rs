@@ -1,6 +1,6 @@
 use anyhow::Context;
 use std::sync::Mutex;
-use tauri::{Manager, WindowEvent};
+use tauri::{Emitter, Manager, WindowEvent};
 use tauri::menu::{Menu, MenuItem};
 use tauri::tray::{TrayIconBuilder, MouseButton, MouseButtonState};
 
@@ -22,6 +22,7 @@ pub struct AppState {
     pub registered_main_hotkey: Mutex<Option<String>>,
     pub registered_explain_hotkey: Mutex<Option<String>>,
     pub registered_settings_hotkey: Mutex<Option<String>>,
+    pub hotkey_registration_error: Mutex<Option<String>>,
     pub tray_menu_items: Mutex<Option<TrayMenuItems>>,
 }
 
@@ -41,6 +42,20 @@ pub fn apply_tray_locale(state: &AppState, locale: &str) {
             let _ = items.settings.set_text(settings);
             let _ = items.quit.set_text(quit);
         }
+    }
+}
+
+pub fn set_hotkey_registration_error(
+    app: &tauri::AppHandle,
+    state: &AppState,
+    error: Option<String>,
+) {
+    if let Ok(mut current) = state.hotkey_registration_error.lock() {
+        *current = error.clone();
+    }
+
+    if let Some(message) = error {
+        let _ = app.emit("hotkey-registration-error", message);
     }
 }
 
@@ -170,6 +185,7 @@ pub fn register_hotkeys(
         .registered_settings_hotkey
         .lock()
         .unwrap() = Some(settings.settings_hotkey.clone());
+    set_hotkey_registration_error(app, state, None);
 
     Ok(())
 }
@@ -191,6 +207,7 @@ pub fn run() {
             registered_main_hotkey: Mutex::new(None),
             registered_explain_hotkey: Mutex::new(None),
             registered_settings_hotkey: Mutex::new(None),
+            hotkey_registration_error: Mutex::new(None),
             tray_menu_items: Mutex::new(None),
         })
         .invoke_handler(tauri::generate_handler![
@@ -209,6 +226,7 @@ pub fn run() {
             commands::clipboard::read_clipboard,
             commands::clipboard::write_clipboard,
             commands::hotkey::update_hotkeys,
+            commands::hotkey::get_hotkey_registration_error,
             commands::api::optimize_text,
             commands::api::explain_text,
         ])
@@ -255,7 +273,9 @@ pub fn run() {
 
             // Register configurable hotkeys.
             if let Err(e) = register_hotkeys(&app.handle(), &settings, &state) {
-                eprintln!("Failed to register hotkeys: {}", e);
+                let message = format!("Failed to register hotkeys: {}", e);
+                eprintln!("{}", message);
+                set_hotkey_registration_error(&app.handle(), &state, Some(message));
             }
 
             // Setup close-to-hide for all windows to prevent destruction.

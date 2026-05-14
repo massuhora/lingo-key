@@ -8,6 +8,7 @@ import {
   mergeSettings,
   toAppSettings,
   toSettings,
+  validateHotkeys,
 } from './settings';
 
 describe('isValidHotkey', () => {
@@ -23,8 +24,17 @@ describe('isValidHotkey', () => {
     expect(isValidHotkey('CmdOrCtrl+Shift+E')).toBe(true);
   });
 
+  it('accepts lowercase hotkeys after normalization', () => {
+    expect(isValidHotkey('ctrl+shift+l')).toBe(true);
+  });
+
   it('accepts function keys with modifiers', () => {
     expect(isValidHotkey('Ctrl+F12')).toBe(true);
+  });
+
+  it('accepts named keys with modifiers', () => {
+    expect(isValidHotkey('Ctrl+PageUp')).toBe(true);
+    expect(isValidHotkey('Ctrl+ArrowDown')).toBe(true);
   });
 
   it('rejects single key without modifier', () => {
@@ -37,6 +47,31 @@ describe('isValidHotkey', () => {
 
   it('rejects plain modifier combination without key', () => {
     expect(isValidHotkey('Ctrl+Shift')).toBe(false);
+  });
+});
+
+describe('validateHotkeys', () => {
+  it('returns no issues for the default hotkeys', () => {
+    expect(validateHotkeys(toAppSettings(DEFAULT_SETTINGS).hotkeys)).toEqual({});
+  });
+
+  it('flags invalid hotkeys by field', () => {
+    expect(validateHotkeys({
+      main: 'Ctrl',
+      explain: 'CommandOrControl+Shift+E',
+      settings: 'CommandOrControl+Shift+S',
+    }).main).toEqual({ code: 'invalid' });
+  });
+
+  it('flags duplicate hotkeys on both fields', () => {
+    const errors = validateHotkeys({
+      main: 'Ctrl+Shift+L',
+      explain: 'ctrl+shift+l',
+      settings: 'CommandOrControl+Shift+S',
+    });
+
+    expect(errors.main).toEqual({ code: 'duplicate', duplicateWith: 'explain' });
+    expect(errors.explain).toEqual({ code: 'duplicate', duplicateWith: 'main' });
   });
 });
 

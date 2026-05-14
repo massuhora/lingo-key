@@ -3,6 +3,14 @@ use serde::{Deserialize, Serialize};
 use crate::AppState;
 use tauri::{Emitter, Manager};
 
+fn localized(locale: &str, zh: &str, en: &str) -> String {
+    if is_chinese_locale(locale) {
+        zh.to_string()
+    } else {
+        en.to_string()
+    }
+}
+
 fn default_main_hotkey() -> String {
     "CommandOrControl+Shift+L".to_string()
 }
@@ -89,6 +97,149 @@ fn is_supported_locale(locale: &str) -> bool {
 
 pub fn is_chinese_locale(locale: &str) -> bool {
     locale == "zh-CN"
+}
+
+fn normalize_hotkey(hotkey: &str) -> String {
+    hotkey
+        .split('+')
+        .map(|part| part.trim())
+        .filter(|part| !part.is_empty())
+        .map(|part| {
+            let lower = part.to_ascii_lowercase();
+            match lower.as_str() {
+                "escape" => "Escape".to_string(),
+                "esc" => "Esc".to_string(),
+                "tab" => "Tab".to_string(),
+                "space" => "Space".to_string(),
+                "enter" => "Enter".to_string(),
+                "return" => "Return".to_string(),
+                "backspace" => "Backspace".to_string(),
+                "delete" => "Delete".to_string(),
+                "insert" => "Insert".to_string(),
+                "home" => "Home".to_string(),
+                "end" => "End".to_string(),
+                "pageup" => "PageUp".to_string(),
+                "pagedown" => "PageDown".to_string(),
+                "arrowup" | "up" => "Up".to_string(),
+                "arrowdown" | "down" => "Down".to_string(),
+                "arrowleft" | "left" => "Left".to_string(),
+                "arrowright" | "right" => "Right".to_string(),
+                "capslock" => "CapsLock".to_string(),
+                "numlock" => "NumLock".to_string(),
+                "scrolllock" => "ScrollLock".to_string(),
+                "printscreen" => "PrintScreen".to_string(),
+                "pause" => "Pause".to_string(),
+                "commandorcontrol" | "cmdorctrl" => "CommandOrControl".to_string(),
+                "cmd" | "command" => "Command".to_string(),
+                "ctrl" | "control" => "Ctrl".to_string(),
+                "alt" | "option" => "Alt".to_string(),
+                "shift" => "Shift".to_string(),
+                "super" => "Super".to_string(),
+                _ if matches!(
+                    lower.as_str(),
+                    "f1" | "f2" | "f3" | "f4" | "f5" | "f6" | "f7" | "f8" | "f9" | "f10"
+                        | "f11" | "f12"
+                ) => lower.to_ascii_uppercase(),
+                _ if part.len() == 1 => part.to_ascii_uppercase(),
+                _ => {
+                    let mut chars = lower.chars();
+                    match chars.next() {
+                        Some(first) => {
+                            format!("{}{}", first.to_ascii_uppercase(), chars.as_str())
+                        }
+                        None => String::new(),
+                    }
+                }
+            }
+        })
+        .collect::<Vec<_>>()
+        .join("+")
+}
+
+fn is_modifier(part: &str) -> bool {
+    matches!(
+        part,
+        "Command" | "Control" | "Cmd" | "Ctrl" | "Alt" | "Option" | "Shift" | "Super"
+            | "CommandOrControl" | "CmdOrCtrl"
+    )
+}
+
+fn is_valid_hotkey(hotkey: &str) -> bool {
+    let normalized = normalize_hotkey(hotkey);
+    let parts = normalized
+        .split('+')
+        .filter(|part| !part.trim().is_empty())
+        .collect::<Vec<_>>();
+
+    if parts.len() < 2 || !parts.iter().any(|part| is_modifier(part)) {
+        return false;
+    }
+
+    let Some(key) = parts.last() else {
+        return false;
+    };
+
+    if key.is_empty() || is_modifier(key) {
+        return false;
+    }
+
+    let named_keys = [
+        "Escape", "Esc", "Tab", "Space", "Enter", "Return", "Backspace", "Delete",
+        "Insert", "Home", "End", "PageUp", "PageDown", "Up", "Down", "Left", "Right",
+        "CapsLock", "NumLock", "ScrollLock", "PrintScreen", "Pause",
+        "F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12",
+    ];
+
+    named_keys.contains(key)
+        || (key.chars().count() == 1
+            && key
+                .chars()
+                .next()
+                .is_some_and(|c| c.is_ascii_alphanumeric() || "`-=[]\\;',./".contains(c)))
+}
+
+fn validate_hotkey_settings(settings: &AppSettings) -> Result<(), String> {
+    let labels = [
+        ("main", "润色模式", "Polish Mode", settings.main_hotkey.as_str()),
+        ("explain", "解释模式", "Explain Mode", settings.explain_hotkey.as_str()),
+        ("settings", "设置模式", "Settings Mode", settings.settings_hotkey.as_str()),
+    ];
+    let mut seen = std::collections::HashMap::<String, (&str, &str, &str)>::new();
+
+    for (field, zh_label, en_label, hotkey) in labels {
+        if !is_valid_hotkey(hotkey) {
+            return Err(if is_chinese_locale(&settings.locale) {
+                format!(
+                    "{}快捷键无效。请至少包含一个修饰键和一个普通按键，例如 Ctrl+Shift+L。",
+                    zh_label
+                )
+            } else {
+                format!(
+                    "{} has an invalid shortcut. Use at least one modifier and one key, for example Ctrl+Shift+L.",
+                    en_label
+                )
+            });
+        }
+
+        let normalized = normalize_hotkey(hotkey).to_ascii_lowercase();
+        if let Some((_, other_zh, other_en)) = seen.get(&normalized) {
+            return Err(if is_chinese_locale(&settings.locale) {
+                format!(
+                    "{}和{}使用了同一个快捷键。请为每个模式设置不同组合。",
+                    zh_label, other_zh
+                )
+            } else {
+                format!(
+                    "{} and {} use the same shortcut. Set a different combination for each mode.",
+                    en_label, other_en
+                )
+            });
+        }
+
+        seen.insert(normalized, (field, zh_label, en_label));
+    }
+
+    Ok(())
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -216,8 +367,32 @@ pub async fn set_settings(
     use tauri_plugin_autostart::ManagerExt;
     use tauri_plugin_store::StoreExt;
 
-    // Ensure valid hotkeys before saving.
+    // Ensure valid values before saving.
     settings.sanitize();
+    validate_hotkey_settings(&settings)?;
+
+    let previous_settings = {
+        let locked = state.settings.lock().map_err(|e| e.to_string())?;
+        let mut previous = locked.clone();
+        settings.window_sizes = previous.window_sizes.clone();
+        previous.sanitize();
+        previous
+    };
+
+    if let Err(e) = crate::register_hotkeys(&app, &settings, &state) {
+        let message = format!(
+            "{}: {}",
+            localized(
+                &settings.locale,
+                "注册全局快捷键失败。这个组合可能已被系统或其他应用占用",
+                "Failed to register global hotkeys. The shortcut may already be used by the system or another app",
+            ),
+            e
+        );
+        crate::set_hotkey_registration_error(&app, &state, Some(message.clone()));
+        let _ = crate::register_hotkeys(&app, &previous_settings, &state);
+        return Err(message);
+    }
 
     // Update store
     let store = app.store("settings.json").map_err(|e| e.to_string())?;
@@ -241,19 +416,12 @@ pub async fn set_settings(
         }
     }
 
-    // Update in-memory state (preserve window sizes) and re-register hotkeys
+    // Update in-memory state.
     {
-        let mut locked = state.settings.lock().map_err(|e| e.to_string())?;
-        let window_sizes = locked.window_sizes.clone();
-        *locked = settings.clone();
-        locked.window_sizes = window_sizes;
+        *state.settings.lock().map_err(|e| e.to_string())? = settings.clone();
     }
 
     crate::apply_tray_locale(&state, &settings.locale);
-
-    if let Err(e) = crate::register_hotkeys(&app, &settings, &state) {
-        eprintln!("Failed to re-register hotkeys: {}", e);
-    }
 
     let _ = app.emit("settings-changed", &settings);
 

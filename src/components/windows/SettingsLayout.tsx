@@ -11,7 +11,13 @@ import {
   Zap,
   type LucideIcon,
 } from "lucide-react";
+import { useMemo } from "react";
 import { getLanguageOptions, getLocaleOptions, useI18n } from "../../lib/i18n";
+import {
+  validateHotkeys,
+  type HotkeyField,
+  type HotkeyValidationIssue,
+} from "../../lib/settings";
 import { cn } from "../../lib/utils";
 import type { AppSettings, OutputMode, Theme } from "../../types";
 import {
@@ -36,6 +42,7 @@ interface SettingsLayoutProps {
   onSave: () => Promise<void>;
   onReset: () => void;
   hasChanges?: boolean;
+  saveError?: string | null;
   onBack?: () => void;
   className?: string;
 }
@@ -84,6 +91,7 @@ export function SettingsLayout({
   onSave,
   onReset,
   hasChanges = false,
+  saveError,
   onBack,
   className,
 }: SettingsLayoutProps) {
@@ -150,6 +158,42 @@ export function SettingsLayout({
   });
   const aiStatusLabel = settings.aiProvider.apiKey ? t("settings.aiConfigured") : t("settings.aiFallback");
   const preferenceStatus = settings.alwaysOnTop ? t("settings.preferencesOnTop") : t("settings.preferencesOnDemand");
+  const hotkeyLabels: Record<HotkeyField, string> = {
+    main: t("settings.hotkey.main"),
+    explain: t("settings.hotkey.explain"),
+    settings: t("settings.hotkey.settings"),
+  };
+  const hotkeyValidation = useMemo(
+    () => validateHotkeys(settings.hotkeys),
+    [settings.hotkeys],
+  );
+  const hasHotkeyValidationErrors = Object.keys(hotkeyValidation).length > 0;
+  const formatHotkeyError = (field: HotkeyField, issue?: HotkeyValidationIssue) => {
+    if (!issue) return undefined;
+
+    if (issue.code === "duplicate" && issue.duplicateWith) {
+      return t("settings.hotkeyError.duplicate", {
+        current: hotkeyLabels[field],
+        other: hotkeyLabels[issue.duplicateWith],
+      });
+    }
+
+    return t("settings.hotkeyError.invalid", { field: hotkeyLabels[field] });
+  };
+  const footerStatus = saveError
+    ? t("settings.saveFailed")
+    : hasHotkeyValidationErrors
+      ? t("settings.hotkeyValidationFailed")
+      : hasChanges
+        ? t("common.unsavedChanges")
+        : t("common.synced");
+  const footerDescription = saveError
+    ? saveError
+    : hasHotkeyValidationErrors
+      ? t("settings.hotkeyValidationDescription")
+      : hasChanges
+        ? t("settings.footerUnsavedDescription")
+        : t("settings.footerSavedDescription");
 
   return (
     <div className={cn("window-shell settings-backdrop", className)}>
@@ -323,17 +367,25 @@ export function SettingsLayout({
                 label={t("settings.hotkey.main")}
                 value={settings.hotkeys.main}
                 onChange={(value) => updateHotkey("main", value)}
+                error={formatHotkeyError("main", hotkeyValidation.main)}
               />
               <HotkeyInput
                 label={t("settings.hotkey.explain")}
                 value={settings.hotkeys.explain}
                 onChange={(value) => updateHotkey("explain", value)}
+                error={formatHotkeyError("explain", hotkeyValidation.explain)}
               />
               <HotkeyInput
                 label={t("settings.hotkey.settings")}
                 value={settings.hotkeys.settings}
                 onChange={(value) => updateHotkey("settings", value)}
+                error={formatHotkeyError("settings", hotkeyValidation.settings)}
               />
+              {saveError && (
+                <div className="rounded-[18px] border border-destructive/28 bg-destructive/10 px-4 py-3 text-xs leading-5 text-destructive">
+                  {saveError}
+                </div>
+              )}
               <div className="panel-inset px-4 py-3">
                 <p className="text-xs leading-5 text-foreground/58">
                   {t("settings.hotkeysHint")}
@@ -420,12 +472,15 @@ export function SettingsLayout({
               <div className="flex items-center justify-between gap-4">
                 <div className="min-w-0">
                   <p className="text-sm font-medium text-foreground">
-                    {hasChanges ? t("common.unsavedChanges") : t("common.synced")}
+                    {footerStatus}
                   </p>
-                  <p className="mt-1 text-xs leading-5 text-foreground/52">
-                    {hasChanges
-                      ? t("settings.footerUnsavedDescription")
-                      : t("settings.footerSavedDescription")}
+                  <p
+                    className={cn(
+                      "mt-1 text-xs leading-5 text-foreground/52",
+                      (saveError || hasHotkeyValidationErrors) && "text-destructive",
+                    )}
+                  >
+                    {footerDescription}
                   </p>
                 </div>
                 <div className="flex items-center gap-3">
@@ -441,7 +496,7 @@ export function SettingsLayout({
                   <Button
                     onClick={onSave}
                     className="min-w-[128px] gap-2"
-                    disabled={!hasChanges}
+                    disabled={!hasChanges || hasHotkeyValidationErrors}
                   >
                     <Save className="h-4 w-4" />
                     {t("common.saveChanges")}

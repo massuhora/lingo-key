@@ -41,13 +41,12 @@ export async function getSettings(): Promise<Settings | null> {
   }
 }
 
-export async function setSettings(settings: Settings): Promise<boolean> {
+export async function setSettings(settings: Settings): Promise<Settings> {
   try {
-    await invoke('set_settings', { settings });
-    return true;
+    return await invoke<Settings>('set_settings', { settings });
   } catch (error) {
     console.error('Failed to set settings:', error);
-    return false;
+    throw new Error(error instanceof Error ? error.message : String(error));
   }
 }
 
@@ -172,6 +171,23 @@ export function listenOpenView(
   callback: (view: OpenView) => void,
 ): Promise<UnlistenFn> {
   return listen('open-view', (event: Event<OpenView>) => {
+    callback(event.payload);
+  });
+}
+
+export async function getHotkeyRegistrationError(): Promise<string | null> {
+  try {
+    return await invoke<string | null>('get_hotkey_registration_error');
+  } catch (error) {
+    console.error('Failed to get hotkey registration error:', error);
+    return null;
+  }
+}
+
+export function listenHotkeyRegistrationError(
+  callback: (error: string) => void,
+): Promise<UnlistenFn> {
+  return listen('hotkey-registration-error', (event: Event<string>) => {
     callback(event.payload);
   });
 }

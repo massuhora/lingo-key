@@ -27,7 +27,7 @@ The problem is not a lack of tools. The problem is that this chain usually gets 
 
 ## Project Status
 
-The current version is `0.3.4`. The repository is still in the MVP stage. The core capabilities are already usable, but the main focus is still on polishing the experience, tightening the workflow, and validating product boundaries.
+The current version is `0.3.6`. The repository is still in the MVP stage. The core capabilities are already usable, but the main focus is still on polishing the experience, tightening the workflow, and validating product boundaries.
 
 The current scope mainly includes:
 
@@ -276,7 +276,7 @@ npm test
 │   ├── hooks/                 # Business hooks
 │   ├── lib/                   # Frontend utilities and Tauri wrappers
 │   ├── types/                 # Type definitions
-│   ├── windows/               # Three window entry pages
+│   ├── windows/               # Unified window entry page
 │   ├── index.css
 │   └── main.tsx
 ├── src-tauri/
@@ -291,8 +291,6 @@ npm test
 │   └── tauri.conf.json
 ├── docs/
 ├── index.html
-├── explain.html
-├── settings.html
 └── README.md
 ```
 

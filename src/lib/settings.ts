@@ -1,6 +1,7 @@
 import type {
   Settings,
   AppSettings,
+  Hotkeys,
   OutputMode,
   Theme,
   AppLanguage,
@@ -49,6 +50,40 @@ type LegacySettingsFields = {
 // Normalize common hotkey aliases so the UI and Rust agree on the format.
 function normalizeHotkeyPart(part: string): string {
   const lower = part.trim().toLowerCase();
+  const namedKeys: Record<string, string> = {
+    escape: 'Escape',
+    esc: 'Esc',
+    tab: 'Tab',
+    space: 'Space',
+    enter: 'Enter',
+    return: 'Return',
+    backspace: 'Backspace',
+    delete: 'Delete',
+    insert: 'Insert',
+    home: 'Home',
+    end: 'End',
+    pageup: 'PageUp',
+    pagedown: 'PageDown',
+    arrowup: 'Up',
+    arrowdown: 'Down',
+    arrowleft: 'Left',
+    arrowright: 'Right',
+    up: 'Up',
+    down: 'Down',
+    left: 'Left',
+    right: 'Right',
+    capslock: 'CapsLock',
+    numlock: 'NumLock',
+    scrolllock: 'ScrollLock',
+    printscreen: 'PrintScreen',
+    pause: 'Pause',
+  };
+  if (/^f([1-9]|1[0-2])$/.test(lower)) {
+    return lower.toUpperCase();
+  }
+  if (namedKeys[lower]) {
+    return namedKeys[lower];
+  }
   if (lower === 'commandorcontrol' || lower === 'cmdorctrl') {
     return 'CommandOrControl';
   }
@@ -89,7 +124,7 @@ export function normalizeHotkey(hotkey: string): string {
  */
 export function isValidHotkey(hotkey: string): boolean {
   if (!hotkey || typeof hotkey !== 'string') return false;
-  const parts = hotkey.split('+').map((p) => p.trim()).filter(Boolean);
+  const parts = normalizeHotkey(hotkey).split('+').map((p) => p.trim()).filter(Boolean);
   if (parts.length < 2) return false;
 
   const modifiers = new Set([
@@ -105,13 +140,11 @@ export function isValidHotkey(hotkey: string): boolean {
     'CmdOrCtrl',
   ]);
 
-  const hasModifier = parts.some((p) =>
-    modifiers.has(p),
-  );
+  const hasModifier = parts.some((p) => modifiers.has(p));
   if (!hasModifier) return false;
 
   const key = parts[parts.length - 1];
-  if (!key) return false;
+  if (!key || modifiers.has(key)) return false;
 
   const namedKeys = new Set([
     'Escape', 'Esc', 'Tab', 'Space', 'Enter', 'Return', 'Backspace',
@@ -125,6 +158,45 @@ export function isValidHotkey(hotkey: string): boolean {
   const isSingleChar = /^[A-Z0-9`\-=[\]\\;',./]$/.test(key);
 
   return isNamedKey || isSingleChar;
+}
+
+export type HotkeyField = keyof Hotkeys;
+export type HotkeyValidationCode = 'invalid' | 'duplicate';
+
+export interface HotkeyValidationIssue {
+  code: HotkeyValidationCode;
+  duplicateWith?: HotkeyField;
+}
+
+export type HotkeyValidationErrors = Partial<Record<HotkeyField, HotkeyValidationIssue>>;
+
+export function validateHotkeys(hotkeys: Hotkeys): HotkeyValidationErrors {
+  const errors: HotkeyValidationErrors = {};
+  const entries = Object.entries(hotkeys) as Array<[HotkeyField, string]>;
+  const seen = new Map<string, HotkeyField>();
+
+  for (const [field, hotkey] of entries) {
+    const normalized = normalizeHotkey(hotkey);
+
+    if (!isValidHotkey(normalized)) {
+      errors[field] = { code: 'invalid' };
+      continue;
+    }
+
+    const duplicateKey = normalized.toLowerCase();
+    const duplicateWith = seen.get(duplicateKey);
+    if (duplicateWith) {
+      errors[field] = { code: 'duplicate', duplicateWith };
+      if (!errors[duplicateWith]) {
+        errors[duplicateWith] = { code: 'duplicate', duplicateWith: field };
+      }
+      continue;
+    }
+
+    seen.set(duplicateKey, field);
+  }
+
+  return errors;
 }
 
 export function normalizeOutputMode(mode: string): OutputMode {

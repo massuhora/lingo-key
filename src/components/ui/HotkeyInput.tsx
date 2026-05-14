@@ -6,6 +6,7 @@ interface HotkeyInputProps {
   value: string;
   onChange: (value: string) => void;
   label?: string;
+  error?: string;
   placeholder?: string;
   className?: string;
 }
@@ -35,6 +36,7 @@ export function HotkeyInput({
   value,
   onChange,
   label,
+  error,
   placeholder,
   className,
 }: HotkeyInputProps) {
@@ -124,12 +126,19 @@ export function HotkeyInput({
           "flex h-14 w-full cursor-pointer select-none rounded-[18px] border border-border/70 bg-surface-soft/92 px-4 py-3 text-center font-mono text-[15px] tracking-[0.2em] text-foreground shadow-[inset_0_1px_0_rgb(var(--foreground)/0.04)] transition-all duration-200 placeholder:text-foreground/34",
           "hover:border-border-strong/75 hover:bg-surface-soft",
           "focus-visible:border-accent focus-visible:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/22",
+          error &&
+            "border-destructive/70 bg-destructive/10 text-destructive focus-visible:border-destructive focus-visible:ring-destructive/20",
           isRecording &&
             "animate-pulse-soft border-accent bg-surface ring-2 ring-accent/20 shadow-[0_0_0_1px_rgb(var(--accent)/0.12),0_20px_40px_-30px_rgb(var(--accent)/0.65)]",
         )}
+        aria-invalid={!!error}
+        aria-describedby={error ? `${label ?? "hotkey"}-error` : undefined}
       />
-      <span className="text-xs leading-5 text-foreground/50">
-        {isRecording ? t("hotkeyInput.recordingHint") : t("hotkeyInput.idleHint")}
+      <span
+        id={error ? `${label ?? "hotkey"}-error` : undefined}
+        className={cn("text-xs leading-5 text-foreground/50", error && "text-destructive")}
+      >
+        {error ?? (isRecording ? t("hotkeyInput.recordingHint") : t("hotkeyInput.idleHint"))}
       </span>
     </div>
   );

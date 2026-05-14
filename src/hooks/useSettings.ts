@@ -60,11 +60,13 @@ export function useSettings(): UseSettingsReturn {
   const updateSettings = useCallback(async (updates: Partial<Settings>) => {
     const next = mergeSettings({ ...settings, ...updates });
     setLocalSettings(next);
-    const ok = await saveSettings(next);
-    if (!ok) {
-      setError('Failed to save settings');
-    } else {
+    try {
+      const saved = await saveSettings(next);
+      setLocalSettings(mergeSettings(saved));
       setError(null);
+    } catch (err) {
+      setLocalSettings(settings);
+      setError(err instanceof Error ? err.message : String(err));
     }
   }, [settings]);
 

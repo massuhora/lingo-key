@@ -11,8 +11,10 @@ import { useWindow } from '../hooks/useWindow';
 import { useAppearance } from '../hooks/useAppearance';
 import { useHistory } from '../hooks/useHistory';
 import {
+  getHotkeyRegistrationError,
   hideCurrentWindow,
   listenClipboardText,
+  listenHotkeyRegistrationError,
   listenOpenView,
   readClipboard,
   setSettings,
@@ -57,6 +59,7 @@ export default function MainWindow() {
   const [originalExplainText, setOriginalExplainText] = useState('');
   const persistedAppSettings = useMemo(() => toAppSettings(settings), [settings]);
   const [draftSettings, setDraftSettings] = useState<AppSettings>(persistedAppSettings);
+  const [settingsSaveError, setSettingsSaveError] = useState<string | null>(null);
   const isDraggingRef = useRef(false);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const lastSavedOptimizeRef = useRef('');
@@ -78,8 +81,37 @@ export default function MainWindow() {
   useEffect(() => {
     if (activeView !== 'settings') {
       setDraftSettings(persistedAppSettings);
+      setSettingsSaveError(null);
     }
   }, [activeView, persistedAppSettings]);
+
+  useEffect(() => {
+    let unlistenHotkeyError: (() => void) | undefined;
+
+    getHotkeyRegistrationError()
+      .then((message) => {
+        if (message) {
+          setSettingsSaveError(message);
+        }
+      })
+      .catch((err) => {
+        console.error('Failed to load hotkey registration error:', err);
+      });
+
+    listenHotkeyRegistrationError((message) => {
+      setSettingsSaveError(message);
+    })
+      .then((dispose) => {
+        unlistenHotkeyError = dispose;
+      })
+      .catch((err) => {
+        console.error('Failed to listen hotkey registration errors:', err);
+      });
+
+    return () => {
+      unlistenHotkeyError?.();
+    };
+  }, []);
 
   useEffect(() => {
     const shouldBeAlwaysOnTop = activeView === 'settings'
@@ -259,14 +291,23 @@ export default function MainWindow() {
 
   const handleSettingsSave = useCallback(async () => {
     const nextBackend = toSettings(draftSettings);
-    const ok = await setSettings(nextBackend);
-    if (ok) {
-      setDraftSettings(toAppSettings(nextBackend));
+    try {
+      const saved = await setSettings(nextBackend);
+      setDraftSettings(toAppSettings(saved));
+      setSettingsSaveError(null);
+    } catch (err) {
+      setSettingsSaveError(err instanceof Error ? err.message : String(err));
     }
   }, [draftSettings]);
 
+  const handleDraftSettingsChange = useCallback((next: AppSettings) => {
+    setDraftSettings(next);
+    setSettingsSaveError(null);
+  }, []);
+
   const handleSettingsReset = useCallback(() => {
     setDraftSettings(toAppSettings(settings));
+    setSettingsSaveError(null);
   }, [settings]);
 
   const hasExplainText = !!originalExplainText.trim();
@@ -311,10 +352,11 @@ export default function MainWindow() {
       {activeView === 'settings' ? (
         <SettingsLayout
           settings={draftSettings}
-          onChange={setDraftSettings}
+          onChange={handleDraftSettingsChange}
           onSave={handleSettingsSave}
           onReset={handleSettingsReset}
           hasChanges={hasSettingsChanges}
+          saveError={settingsSaveError}
           onBack={openOptimize}
         />
       ) : activeView === 'history' ? (

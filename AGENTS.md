@@ -22,15 +22,14 @@
 | 桌面框架 | Tauri 2（Rust）                           |
 | 测试框架 | Vitest 4 + jsdom + @testing-library/react |
 
-### 多窗口架构
+### 窗口架构
 
-应用包含 3 个独立的 HTML 入口（Vite 多页配置）：
+应用当前使用一个 Tauri 窗口承载多个 React 视图：
 
-- `index.html` → `src/main.tsx` → 主浮窗（`main` 窗口，520×420）
-- `explain.html` → `src/windows/explain.tsx` → 解释小窗（`explain` 窗口，360×280）
-- `settings.html` → `src/windows/settings.tsx` → 设置页（`settings` 窗口，480×520）
+- `index.html` → `src/main.tsx` → `src/windows/main.tsx` → 统一桌面窗口（`main` 窗口，默认 560×640）
+- 统一窗口内包含 `optimize`、`explain`、`settings`、`history` 四个视图。
 
-所有窗口均为无边框（`decorations: false`）、透明背景（`transparent: true`）、默认置顶（`alwaysOnTop: true`）。主窗口和解释窗口在失焦时自动隐藏；设置窗口不失焦隐藏，方便用户操作。
+窗口为无边框（`decorations: false`）、可调整大小、默认置顶（`alwaysOnTop: true`）。主窗口在普通视图中会按设置处理失焦隐藏；设置视图保持可操作，不会因为切换控件焦点而立即隐藏。
 
 ---
 
@@ -39,16 +38,15 @@
 ```
 lingokey/
 ├── index.html                # 主窗口入口
-├── explain.html              # 解释窗口入口
-├── settings.html             # 设置窗口入口
 ├── package.json              # Node 依赖与脚本
-├── vite.config.ts            # Vite 配置（多页输入、Tauri 开发端口 1420）
+├── vite.config.ts            # Vite 配置（Tauri 开发端口 5173）
 ├── vitest.config.ts          # 测试配置（jsdom、@ alias）
 ├── tailwind.config.js        # Tailwind + 设计令牌
 ├── postcss.config.js         # PostCSS（tailwindcss + autoprefixer）
 ├── tsconfig.json             # TypeScript（strict、ES2020、react-jsx）
-├── design-system.md          # 设计系统文档
-├── docs/PRD.md               # 产品需求文档
+├── docs/
+│   ├── DESIGN.md             # 设计系统文档
+│   └── PRD.md                # 产品需求文档
 ├── src/
 │   ├── components/
 │   │   ├── ui/               # 基础 UI 组件（Button、Input、Card、HotkeyInput、Slider 等）
@@ -61,7 +59,7 @@ lingokey/
 │   │   └── utils.ts          # 轻量工具（cn 类名合并）
 │   ├── types/
 │   │   └── index.ts          # TypeScript 类型定义
-│   ├── windows/              # 窗口页面组件（explain.tsx、main.tsx、settings.tsx）
+│   ├── windows/              # 统一窗口页面组件（main.tsx）
 │   ├── test/
 │   │   └── setup.ts          # Vitest 全局初始化（import '@testing-library/jest-dom'）
 │   ├── main.tsx              # 主窗口 React 根入口
@@ -107,7 +105,7 @@ npm install
 npm run tauri dev
 ```
 
-> Vite 开发服务器固定端口 `1420`（`strictPort: true`）。Tauri `beforeDevCommand` 会自动执行 `npm run dev`。
+> Vite 开发服务器固定端口 `5173`（`strictPort: true`）。Tauri `beforeDevCommand` 会自动执行 `npm run dev`。
 
 ### 纯前端开发（浏览器预览，无 Tauri API）
 
@@ -279,4 +277,4 @@ pub struct AppState {
 
 - `README.md` — 项目简介、快速开始、默认快捷键表
 - `docs/PRD.md` — 产品需求与 MVP 范围
-- `design-system.md` — 颜色、字体、动效规范
+- `docs/DESIGN.md` — 颜色、字体、动效规范
