@@ -50,6 +50,20 @@ describe('history helpers', () => {
     expect(items[0].createdAt).toBeGreaterThanOrEqual(existing.createdAt);
   });
 
+  it('can create a new history item as a favorite', () => {
+    const items = upsertHistoryItem([], {
+      kind: 'explain',
+      input: 'flaky',
+      output: '不稳定，偶发失败',
+      favorite: true,
+    });
+
+    expect(items[0]).toMatchObject({
+      kind: 'explain',
+      favorite: true,
+    });
+  });
+
   it('toggles favorites and removes items', () => {
     const first = item({ id: 'first' });
     const second = item({ id: 'second' });

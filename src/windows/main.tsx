@@ -347,6 +347,67 @@ export default function MainWindow() {
     hasExplainText,
   ]);
 
+  const currentExplainHistoryItem = useMemo(() => {
+    const original = displayExplainResult.original.trim();
+    const meaning = displayExplainResult.meaning.trim();
+
+    if (!hasExplainText || explainLoading || !original || !meaning) {
+      return undefined;
+    }
+
+    return historyItems.find(
+      (item) =>
+        item.kind === 'explain' &&
+        item.input === original &&
+        item.output === meaning,
+    );
+  }, [
+    displayExplainResult.meaning,
+    displayExplainResult.original,
+    explainLoading,
+    hasExplainText,
+    historyItems,
+  ]);
+
+  const handleExplainFavoriteToggle = useCallback(() => {
+    const original = displayExplainResult.original.trim();
+    const meaning = displayExplainResult.meaning.trim();
+    const context = displayExplainResult.context.trim();
+    const signature = `${original}\n---\n${meaning}`;
+
+    if (!hasExplainText || explainLoading || !original || !meaning) {
+      return;
+    }
+
+    if (currentExplainHistoryItem) {
+      toggleHistoryFavorite(currentExplainHistoryItem.id);
+      return;
+    }
+
+    lastSavedExplainRef.current = signature;
+    addHistoryItem({
+      kind: 'explain',
+      input: original,
+      output: meaning,
+      context: context || undefined,
+      favorite: true,
+    });
+  }, [
+    addHistoryItem,
+    currentExplainHistoryItem,
+    displayExplainResult.context,
+    displayExplainResult.meaning,
+    displayExplainResult.original,
+    explainLoading,
+    hasExplainText,
+    toggleHistoryFavorite,
+  ]);
+
+  const canFavoriteExplain = hasExplainText &&
+    !explainLoading &&
+    !!displayExplainResult.original.trim() &&
+    !!displayExplainResult.meaning.trim();
+
   return (
     <I18nProvider locale={appearanceSettings.locale}>
       {activeView === 'settings' ? (
@@ -381,6 +442,9 @@ export default function MainWindow() {
           onPolishClick={openOptimize}
           onSettingsClick={openSettings}
           onResultCopied={saveExplainToHistory}
+          isFavorite={currentExplainHistoryItem?.favorite ?? false}
+          favoriteDisabled={!canFavoriteExplain}
+          onFavoriteToggle={handleExplainFavoriteToggle}
         />
       ) : (
         <MainLayout

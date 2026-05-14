@@ -11,7 +11,7 @@ import {
 export interface UseHistoryReturn {
   items: HistoryItem[];
   loading: boolean;
-  addItem: (item: Pick<HistoryItem, 'kind' | 'input' | 'output' | 'context'>) => void;
+  addItem: (item: Pick<HistoryItem, 'kind' | 'input' | 'output' | 'context'> & Partial<Pick<HistoryItem, 'favorite'>>) => void;
   toggleFavorite: (id: string) => void;
   removeItem: (id: string) => void;
 }

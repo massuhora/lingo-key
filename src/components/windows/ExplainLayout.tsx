@@ -1,4 +1,4 @@
-import { ArrowLeft, BookOpen, Pin, PinOff, Settings } from "lucide-react";
+import { ArrowLeft, BookOpen, Pin, PinOff, Settings, Star } from "lucide-react";
 import { useI18n } from "../../lib/i18n";
 import { cn } from "../../lib/utils";
 import { Button, CopyButton, TitleBar, Tooltip, WindowResizeHandles } from "../ui";
@@ -13,6 +13,9 @@ interface ExplainLayoutProps {
   onPolishClick?: () => void;
   onSettingsClick?: () => void;
   onResultCopied?: () => void;
+  isFavorite?: boolean;
+  favoriteDisabled?: boolean;
+  onFavoriteToggle?: () => void;
   className?: string;
 }
 
@@ -25,6 +28,9 @@ export function ExplainLayout({
   onPolishClick,
   onSettingsClick,
   onResultCopied,
+  isFavorite = false,
+  favoriteDisabled = false,
+  onFavoriteToggle,
   className,
 }: ExplainLayoutProps) {
   const { t } = useI18n();
@@ -87,12 +93,30 @@ export function ExplainLayout({
           <div className="flex items-center gap-2">
             <span className="status-chip">{t("explain.triggerHint")}</span>
           </div>
-          <CopyButton
-            text={`${result.original}\n\n${result.meaning}`}
-            variant="ghost"
-            onCopied={onResultCopied}
-            className="h-9 w-9 text-foreground/54 hover:text-foreground"
-          />
+          <div className="flex shrink-0 items-center gap-1">
+            <Tooltip content={isFavorite ? t("history.unfavorite") : t("history.favorite")} side="bottom">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={onFavoriteToggle}
+                disabled={favoriteDisabled}
+                aria-pressed={isFavorite}
+                aria-label={isFavorite ? t("history.unfavorite") : t("history.favorite")}
+                className={cn(
+                  "h-9 w-9 text-foreground/54 hover:text-foreground",
+                  isFavorite && "text-accent hover:text-accent",
+                )}
+              >
+                <Star className={cn("h-4 w-4", isFavorite && "fill-current")} />
+              </Button>
+            </Tooltip>
+            <CopyButton
+              text={`${result.original}\n\n${result.meaning}`}
+              variant="ghost"
+              onCopied={onResultCopied}
+              className="h-9 w-9 text-foreground/54 hover:text-foreground"
+            />
+          </div>
         </div>
 
         <section className="panel-surface px-4 py-4">

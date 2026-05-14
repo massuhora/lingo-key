@@ -106,7 +106,7 @@ export async function saveHistoryItems(items: HistoryItem[]): Promise<void> {
 
 export function upsertHistoryItem(
   items: HistoryItem[],
-  next: Pick<HistoryItem, 'kind' | 'input' | 'output' | 'context'>,
+  next: Pick<HistoryItem, 'kind' | 'input' | 'output' | 'context'> & Partial<Pick<HistoryItem, 'favorite'>>,
 ): HistoryItem[] {
   const input = next.input.trim();
   const output = next.output.trim();
@@ -127,7 +127,7 @@ export function upsertHistoryItem(
     output,
     context: context || undefined,
     createdAt: Date.now(),
-    favorite: existing?.favorite ?? false,
+    favorite: next.favorite ?? existing?.favorite ?? false,
   };
 
   return normalizeItems([
