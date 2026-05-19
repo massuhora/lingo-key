@@ -56,6 +56,8 @@ export interface ExplainResult {
   original: string;
   meaning: string;
   context: string;
+  partOfSpeech?: string;
+  usage?: string;
 }
 
 export type HistoryKind = 'optimize' | 'explain';

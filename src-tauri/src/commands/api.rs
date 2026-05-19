@@ -18,6 +18,10 @@ pub struct ExplainResult {
     pub original: String,
     pub meaning: String,
     pub context: String,
+    #[serde(rename = "partOfSpeech", skip_serializing_if = "Option::is_none")]
+    pub part_of_speech: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub usage: Option<String>,
 }
 
 #[derive(Deserialize, Debug)]
@@ -161,20 +165,57 @@ fn build_optimize_prompt(
     ]
 }
 
+fn is_single_word_expression(text: &str) -> bool {
+    let trimmed = text.trim().trim_matches(|c: char| {
+        c.is_ascii_punctuation() && c != '\'' && c != '-' && c != '_'
+    });
+
+    !trimmed.is_empty()
+        && !trimmed.chars().any(char::is_whitespace)
+        && trimmed.chars().any(char::is_alphabetic)
+}
+
+fn blank_to_none(value: Option<String>) -> Option<String> {
+    value.and_then(|value| {
+        let trimmed = value.trim();
+        if trimmed.is_empty() {
+            None
+        } else {
+            Some(trimmed.to_string())
+        }
+    })
+}
+
 fn build_explain_prompt(text: &str, native_language: &str, learning_language: &str) -> Vec<ChatMessage> {
     let native_language = language_name(native_language);
     let learning_language = language_name(learning_language);
+    let input_kind = if is_single_word_expression(text) {
+        "single word"
+    } else {
+        "phrase, sentence, or short paragraph"
+    };
     let system = format!(
         "You are LingoKey, an assistant helping developers understand expressions they encounter while working with AI coding tools.\n\
         The user's native language is {}.\n\
         The language they are learning is {}.\n\
         Treat the user's input as primarily written in {} unless the text clearly indicates otherwise.\n\
+        Input classification: {}.\n\
         Given a word, phrase, sentence, or short paragraph, provide a helpful explanation in {}.\n\n\
         Return your answer as a JSON object with these exact keys:\n\
         - meaning: Accurate and complete {} explanation or translation of the entire input. Do not omit any sentences.\n\
         - context: A concise explanation in {} of the general context where this expression is used\n\
+        - partOfSpeech: If and only if the input classification is single word, explain the word's likely part or parts of speech in {}; otherwise return an empty string.\n\
+        - usage: If and only if the input classification is single word, explain common usage patterns, collocations, register, and developer-context examples in {}; otherwise return an empty string.\n\
         Only return the JSON object. Do not wrap it in markdown code blocks.",
-        native_language, learning_language, learning_language, native_language, native_language, native_language
+        native_language,
+        learning_language,
+        learning_language,
+        input_kind,
+        native_language,
+        native_language,
+        native_language,
+        native_language,
+        native_language
     );
 
     vec![
@@ -325,6 +366,10 @@ pub async fn explain_text(
             struct RawExplain {
                 meaning: String,
                 context: String,
+                #[serde(default, rename = "partOfSpeech", alias = "part_of_speech")]
+                part_of_speech: Option<String>,
+                #[serde(default)]
+                usage: Option<String>,
             }
 
             let parsed: RawExplain = serde_json::from_str(cleaned)
@@ -340,11 +385,32 @@ pub async fn explain_text(
                 original: text,
                 meaning: parsed.meaning,
                 context: parsed.context,
+                part_of_speech: blank_to_none(parsed.part_of_speech),
+                usage: blank_to_none(parsed.usage),
             })
         }
         Err(e) => {
             // Graceful fallback.
             Err(e)
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::is_single_word_expression;
+
+    #[test]
+    fn identifies_single_word_inputs() {
+        assert!(is_single_word_expression("commit"));
+        assert!(is_single_word_expression("rollback."));
+        assert!(is_single_word_expression("error-handling"));
+    }
+
+    #[test]
+    fn rejects_multi_word_inputs() {
+        assert!(!is_single_word_expression("commit changes"));
+        assert!(!is_single_word_expression("set up"));
+        assert!(!is_single_word_expression(""));
     }
 }

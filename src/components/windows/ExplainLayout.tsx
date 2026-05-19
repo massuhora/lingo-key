@@ -34,6 +34,15 @@ export function ExplainLayout({
   className,
 }: ExplainLayoutProps) {
   const { t } = useI18n();
+  const supplementalLines = [
+    result.partOfSpeech ? `${t("explain.partOfSpeech")}: ${result.partOfSpeech}` : undefined,
+    result.usage ? `${t("explain.usage")}: ${result.usage}` : undefined,
+  ].filter(Boolean);
+  const copyText = [
+    result.original,
+    result.meaning,
+    ...supplementalLines,
+  ].filter(Boolean).join("\n\n");
 
   return (
     <div className={cn("window-shell", className)}>
@@ -111,7 +120,7 @@ export function ExplainLayout({
               </Button>
             </Tooltip>
             <CopyButton
-              text={`${result.original}\n\n${result.meaning}`}
+              text={copyText}
               variant="ghost"
               onCopied={onResultCopied}
               className="h-9 w-9 text-foreground/54 hover:text-foreground"
@@ -137,6 +146,22 @@ export function ExplainLayout({
               {t("explain.meaning", { language: nativeLanguageLabel })}
             </span>
             <p className="text-sm leading-6 text-foreground/90">{result.meaning}</p>
+            {(result.partOfSpeech || result.usage) && (
+              <div className="mt-3 grid gap-2">
+                {result.partOfSpeech && (
+                  <div className="rounded-xl border border-border/55 bg-primary/58 px-3 py-2">
+                    <span className="eyebrow-label">{t("explain.partOfSpeech")}</span>
+                    <p className="mt-1 text-sm leading-6 text-foreground/82">{result.partOfSpeech}</p>
+                  </div>
+                )}
+                {result.usage && (
+                  <div className="rounded-xl border border-border/55 bg-primary/58 px-3 py-2">
+                    <span className="eyebrow-label">{t("explain.usage")}</span>
+                    <p className="mt-1 text-sm leading-6 text-foreground/82">{result.usage}</p>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </section>
 

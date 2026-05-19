@@ -27,6 +27,18 @@ import type { AppSettings, ExplainResult, HistoryItem } from '../types';
 
 type ActiveView = 'optimize' | 'explain' | 'settings' | 'history';
 
+function getExplainContext(result: ExplainResult, locale: AppSettings['locale']) {
+  return [
+    result.partOfSpeech
+      ? `${translate(locale, 'explain.partOfSpeech')}: ${result.partOfSpeech.trim()}`
+      : undefined,
+    result.usage
+      ? `${translate(locale, 'explain.usage')}: ${result.usage.trim()}`
+      : undefined,
+    result.context.trim() || undefined,
+  ].filter(Boolean).join('\n');
+}
+
 export default function MainWindow() {
   const { settings, updateSettings, loading: settingsLoading } = useSettings();
   const [activeView, setActiveView] = useState<ActiveView>('optimize');
@@ -324,8 +336,8 @@ export default function MainWindow() {
   const saveExplainToHistory = useCallback(() => {
     const original = displayExplainResult.original.trim();
     const meaning = displayExplainResult.meaning.trim();
-    const context = displayExplainResult.context.trim();
-    const signature = `${original}\n---\n${meaning}`;
+    const context = getExplainContext(displayExplainResult, settings.locale);
+    const signature = `${original}\n---\n${meaning}\n---\n${context}`;
 
     if (!hasExplainText || explainLoading || !original || !meaning || signature === lastSavedExplainRef.current) {
       return;
@@ -343,8 +355,11 @@ export default function MainWindow() {
     displayExplainResult.context,
     displayExplainResult.meaning,
     displayExplainResult.original,
+    displayExplainResult.partOfSpeech,
+    displayExplainResult.usage,
     explainLoading,
     hasExplainText,
+    settings.locale,
   ]);
 
   const currentExplainHistoryItem = useMemo(() => {
@@ -372,8 +387,8 @@ export default function MainWindow() {
   const handleExplainFavoriteToggle = useCallback(() => {
     const original = displayExplainResult.original.trim();
     const meaning = displayExplainResult.meaning.trim();
-    const context = displayExplainResult.context.trim();
-    const signature = `${original}\n---\n${meaning}`;
+    const context = getExplainContext(displayExplainResult, settings.locale);
+    const signature = `${original}\n---\n${meaning}\n---\n${context}`;
 
     if (!hasExplainText || explainLoading || !original || !meaning) {
       return;
@@ -398,8 +413,11 @@ export default function MainWindow() {
     displayExplainResult.context,
     displayExplainResult.meaning,
     displayExplainResult.original,
+    displayExplainResult.partOfSpeech,
+    displayExplainResult.usage,
     explainLoading,
     hasExplainText,
+    settings.locale,
     toggleHistoryFavorite,
   ]);
 

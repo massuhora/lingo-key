@@ -9,6 +9,8 @@ function mockExplain(text: string, locale: 'zh-CN' | 'en-US'): ExplainResult {
     original: trimmed,
     meaning: translate(locale, 'explain.fallbackMeaning', { text: trimmed }),
     context: translate(locale, 'explain.fallbackContext'),
+    partOfSpeech: undefined,
+    usage: undefined,
   };
 }
 

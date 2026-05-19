@@ -268,7 +268,9 @@ export function HistoryLayout({
                           </Button>
                         </Tooltip>
                         <CopyButton
-                          text={item.kind === "optimize" ? item.output : `${item.input}\n\n${item.output}`}
+                          text={item.kind === "optimize"
+                            ? item.output
+                            : [item.input, item.output, item.context].filter(Boolean).join("\n\n")}
                           variant="ghost"
                           className="h-8 w-8 text-foreground/54 hover:text-foreground"
                         />
